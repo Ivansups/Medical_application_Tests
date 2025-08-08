@@ -1,6 +1,9 @@
-from fastapi import FastAPI, Depends, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from .db import get_db
+from fastapi import FastAPI, Depends
+from sqlalchemy.orm import Session
+from app.db import get_db
 
-app = FastAPI(debug=True)
+app = FastAPI()
 
+@app.get("/")
+def read_root(db: Session = Depends(get_db)):
+    return {"message": "Hello, Database is connected!"}
