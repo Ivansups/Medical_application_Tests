@@ -5,9 +5,9 @@ class Settings(BaseSettings):
     DATABASE_URL: str | None = None
     
     POSTGRES_USER: str = 'postgres'
-    POSTGRES_PASSWORD: str = 'password'
-    POSTGRES_DB: str = 'medical_tests'
-    POSTGRES_HOST: str = 'localhost'
+    POSTGRES_PASSWORD: str = '3891123'
+    POSTGRES_DB: str = 'medical_application'
+    POSTGRES_HOST: str = 'db'
     POSTGRES_PORT: int = 5432
 
     @property

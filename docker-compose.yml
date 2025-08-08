@@ -5,9 +5,9 @@ services:
     image: postgres:15
     container_name: medical_tests_db
     environment:
-      POSTGRES_DB: medical_tests
+      POSTGRES_DB: medical_application
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
+      POSTGRES_PASSWORD: 3891123
     ports:
       - "5432:5432"
     volumes:
@@ -24,7 +24,7 @@ services:
       dockerfile: Dockerfile
     container_name: medical_tests_api
     environment:
-      DATABASE_URL: postgresql://postgres:password@db:5432/medical_tests
+      DATABASE_URL: postgresql+psycopg://postgres:3891123@db:5432/medical_application
     ports:
       - "8000:8000"
     depends_on:
@@ -32,27 +32,29 @@ services:
         condition: service_healthy
     volumes:
       - ./backend:/app
+      - ./alembic:/app/alembic
+      - ./alembic.ini:/app/alembic.ini
     command: >
       sh -c "
         alembic upgrade head &&
-        uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+        uvicorn app.main:app --host 0.0.0.0 --port 8000
       "
 
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: medical_tests_frontend
-    environment:
-      NEXT_PUBLIC_API_URL: http://localhost:8000
-    ports:
-      - "3000:3000"
-    depends_on:
-      - api
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-      - /app/.next
+  # frontend:
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: Dockerfile
+  #   container_name: medical_tests_frontend
+  #   environment:
+  #     NEXT_PUBLIC_API_URL: http://localhost:8000
+  #   ports:
+  #     - "3000:3000"
+  #   depends_on:
+  #     - api
+  #   volumes:
+  #     - ./frontend:/app
+  #     - /app/node_modules
+  #     - /app/.next
 
 volumes:
   postgres_data:

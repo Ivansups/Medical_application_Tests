@@ -7,6 +7,7 @@ from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
+from app.core.config import settings
 
 from alembic import context
 load_dotenv()
@@ -49,7 +50,8 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = config.get_main_option("sqlalchemy.url")
+    # Prefer DATABASE_URL from environment if present
+    url = settings.postgres_url or config.get_main_option("sqlalchemy.url")
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -68,8 +70,11 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
+    # Prefer DATABASE_URL from environment if present
+    section = config.get_section(config.config_ini_section, {})
+    section["sqlalchemy.url"] = settings.postgres_url or section.get("sqlalchemy.url")
     connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
+        section,
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )
