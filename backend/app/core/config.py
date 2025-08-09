@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     POSTGRES_USER: str = 'postgres'
     POSTGRES_PASSWORD: str = '3891123'
     POSTGRES_DB: str = 'medical_application'
-    POSTGRES_HOST: str = 'db'
+    POSTGRES_HOST: str = 'localhost'
     POSTGRES_PORT: int = 5432
 
     @property

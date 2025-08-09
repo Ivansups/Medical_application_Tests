@@ -1,6 +1,5 @@
 import os
 import sys
-from logging.config import fileConfig
 from dotenv import load_dotenv
 
 from sqlalchemy import engine_from_config
@@ -26,11 +25,6 @@ target_metadata = Base.metadata
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
-
-# Interpret the config file for Python logging.
-# This line sets up loggers basically.
-# if config.config_file_name is not None:
-#     fileConfig(config.config_file_name)
 
 # add your model's MetaData object here
 # for 'autogenerate' support
@@ -58,7 +52,7 @@ def run_migrations_offline() -> None:
 
     """
     # Prefer DATABASE_URL from environment if present
-    url = settings.postgres_url or config.get_main_option("sqlalchemy.url")
+    url = config.get_main_option("sqlalchemy.url")
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -77,9 +71,8 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
-    # Prefer DATABASE_URL from environment if present
+    # Use the URL from config file
     section = config.get_section(config.config_ini_section, {})
-    section["sqlalchemy.url"] = settings.postgres_url or section.get("sqlalchemy.url")
     connectable = engine_from_config(
         section,
         prefix="sqlalchemy.",
