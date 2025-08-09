@@ -9,8 +9,8 @@
 # Запуск всех сервисов
 docker-compose up -d
 
-# Фронтенд: http://localhost:3000
-# API: http://localhost:8000
+# Фронтенд будет на: http://localhost:3000
+# API: http://localhost:8000/docs
 # База данных: localhost:5432
 ```
 
