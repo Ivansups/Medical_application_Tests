@@ -14,7 +14,7 @@ docker-compose up -d
 # 🔧 API: http://localhost:8000
 # 📚 Документация API: http://localhost:8000/docs
 # 🗄️ База данных: localhost:5432
-```
+
 
 ### Вариант 2: Локально
 ```bash
