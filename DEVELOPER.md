@@ -8,12 +8,13 @@
 
 | Библиотека | Версия | Назначение |
 |------------|--------|------------|
-| FastAPI | 0.116.1 | Веб-фреймворк для API |
+| FastAPI | 0.116.1+ | Веб-фреймворк для API |
 | Uvicorn | 0.24.0 | ASGI сервер |
-| SQLAlchemy | 2.0.42 | ORM для базы данных |
-| psycopg | 3.2.9 | Драйвер PostgreSQL |
+| SQLAlchemy | 2.0.42+ | ORM для базы данных |
+| psycopg | 3.2.9+ | Драйвер PostgreSQL |
 | Alembic | 1.12.1 | Миграции БД |
-| Pydantic | 2.11.7 | Валидация данных |
+| Pydantic | 2.11.7+ | Валидация данных |
+| pydantic-settings | 2.10.1+ | Настройки приложения |
 | python-dotenv | 1.0.0 | Переменные окружения |
 
 ### Управление виртуальной средой
@@ -47,6 +48,41 @@ pip install -r backend/requirements.txt
 
 ## 🗄️ База данных
 
+### Структура базы данных
+
+#### Таблица `users`
+```sql
+CREATE TABLE users (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    email VARCHAR(255) UNIQUE NOT NULL,
+    name VARCHAR(100),
+    credits INTEGER DEFAULT 3
+);
+```
+
+#### Таблица `tests`
+```sql
+CREATE TABLE tests (
+    test_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    title VARCHAR(255) NOT NULL,
+    description VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    duration INTEGER NOT NULL
+);
+```
+
+#### Таблица `questions`
+```sql
+CREATE TABLE questions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    test_id UUID NOT NULL REFERENCES tests(test_id),
+    question_text TEXT NOT NULL,
+    options JSON,
+    correct_answers JSON,
+    question_type VARCHAR(50) DEFAULT 'multiple_choice'
+);
+```
+
 ### Миграции Alembic
 
 ```bash
@@ -69,26 +105,41 @@ alembic upgrade head
 #### Test Model
 ```python
 class Test(Base):
-    __tablename__ = "tests"
+    __tablename__ = 'tests'
     
-    test_id = Column(String, primary_key=True, index=True)
-    title = Column(String, nullable=False)
-    description = Column(String, nullable=True)
+    test_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    title = Column(String(255), nullable=False)
+    description = Column(String(255), nullable=True)
     duration = Column(Integer, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
+    
+    questions = relationship("Question", back_populates="test", cascade="all, delete-orphan")
 ```
 
 #### Question Model
 ```python
 class Question(Base):
-    __tablename__ = "questions"
+    __tablename__ = 'questions'
     
-    id = Column(String, primary_key=True, index=True)
-    test_id = Column(String, ForeignKey("tests.test_id"))
-    question_text = Column(String, nullable=False)
-    options = Column(ARRAY(String), nullable=False)
-    correct_answers = Column(ARRAY(Integer), nullable=False)
-    question_type = Column(String, default="multiple_choice")
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    test_id = Column(UUID(as_uuid=True), ForeignKey('tests.test_id'), nullable=False)
+    question_text = Column(Text, nullable=False)
+    options = Column(JSON)  # Храним как JSON для списков
+    correct_answers = Column(JSON)  # Храним как JSON для списков
+    question_type = Column(String(50), default='multiple_choice')
+    
+    test = relationship("Test", back_populates="questions")
+```
+
+#### User Model
+```python
+class User(Base):
+    __tablename__ = 'users'
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    email = Column(String(255), unique=True, nullable=False)
+    name = Column(String(100))
+    credits = Column(Integer, default=3)
 ```
 
 ## 🔧 API Endpoints
@@ -97,9 +148,12 @@ class Question(Base):
 
 ```
 /api/v1/
-├── tests/           # Основные операции с тестами
-├── questions/       # Управление вопросами
-└── users/          # Управление пользователями
+└── tests/           # Основные операции с тестами
+    ├── GET /        # Получить список тестов
+    ├── POST /       # Создать новый тест
+    ├── GET /{id}    # Получить тест по ID
+    ├── DELETE /{id} # Удалить тест по ID
+    └── DELETE /     # Удалить все тесты
 ```
 
 ### Примеры запросов
@@ -128,6 +182,11 @@ curl -X POST "http://localhost:8000/api/v1/tests" \
 curl "http://localhost:8000/api/v1/tests/{test_id}"
 ```
 
+#### Удаление теста
+```bash
+curl -X DELETE "http://localhost:8000/api/v1/tests/{test_id}"
+```
+
 ## 🐳 Docker
 
 ### Команды Docker Compose
@@ -149,6 +208,36 @@ docker-compose up --build
 docker-compose down -v
 ```
 
+### Конфигурация сервисов
+
+#### База данных (PostgreSQL)
+```yaml
+db:
+  image: postgres:15
+  environment:
+    POSTGRES_DB: medical_application
+    POSTGRES_USER: postgres
+    POSTGRES_PASSWORD: 3891123
+  ports:
+    - "5432:5432"
+  volumes:
+    - postgres_data:/var/lib/postgresql/data
+```
+
+#### API (FastAPI)
+```yaml
+api:
+  build:
+    context: ./backend
+  environment:
+    DATABASE_URL: postgresql+psycopg://postgres:3891123@db:5432/medical_application
+  ports:
+    - "8000:8000"
+  depends_on:
+    db:
+      condition: service_healthy
+```
+
 ### Dockerfile оптимизации
 
 #### Backend Dockerfile
@@ -161,21 +250,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
-```
-
-#### Frontend Dockerfile
-```dockerfile
-FROM node:18-alpine AS builder
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --only=production
-
-FROM node:18-alpine AS runner
-WORKDIR /app
-COPY --from=builder /app/node_modules ./node_modules
-COPY . .
-EXPOSE 3000
-CMD ["npm", "start"]
 ```
 
 ## 🧪 Тестирование
@@ -284,6 +358,19 @@ on:
 jobs:
   test-backend:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python
@@ -297,6 +384,8 @@ jobs:
         run: |
           cd backend
           pytest
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
 
   test-frontend:
     runs-on: ubuntu-latest
@@ -308,11 +397,11 @@ jobs:
           node-version: '18'
       - name: Install dependencies
         run: |
-          cd frontend
+          cd frontend/frontend_project
           npm ci
       - name: Run tests
         run: |
-          cd frontend
+          cd frontend/frontend_project
           npm test
 ```
 
@@ -349,7 +438,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "https://yourdomain.com"],
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -360,10 +449,10 @@ app.add_middleware(
 
 ```bash
 # .env файл
-DATABASE_URL=postgresql://user:password@localhost/medical_tests
+DATABASE_URL=postgresql://postgres:3891123@localhost/medical_application
 SECRET_KEY=your-secret-key-here
 DEBUG=False
-CORS_ORIGINS=http://localhost:3000,https://yourdomain.com
+CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
 ```
 
 ## 📚 Полезные команды
@@ -380,6 +469,9 @@ pip check
 
 # Обновление requirements.txt
 pip freeze > requirements.txt
+
+# Проверка подключения к БД
+python -c "from app.db.session import engine; print('✓ DB connection OK')"
 ```
 
 ### Frontend
@@ -396,6 +488,35 @@ npx @next/bundle-analyzer
 npm update
 npm audit fix
 ```
+
+### База данных
+
+```bash
+# Подключение к PostgreSQL
+psql -h localhost -U postgres -d medical_application
+
+# Проверка таблиц
+\dt
+
+# Проверка данных
+SELECT * FROM tests LIMIT 5;
+SELECT * FROM questions LIMIT 5;
+SELECT * FROM users LIMIT 5;
+```
+
+## 🔄 Миграции и схема БД
+
+### История миграций
+
+1. **001_create_users_table.py** - Создание таблицы пользователей
+2. **002_create_tests_and_questions_tables.py** - Создание таблиц тестов и вопросов
+3. **4d38510afd5e_update_question_fields_to_use_json_type.py** - Обновление полей вопросов для использования JSON типа
+
+### Важные изменения схемы
+
+- Поля `options` и `correct_answers` в таблице `questions` теперь используют тип JSON
+- Поле `question_text` изменено на тип TEXT для поддержки длинных вопросов
+- Добавлена связь между таблицами `tests` и `questions` через внешний ключ
 
 ---
 

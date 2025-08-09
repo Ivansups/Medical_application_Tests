@@ -10,24 +10,23 @@
 docker-compose up -d
 
 # Проверка работы:
-# 🌐 Фронтенд: http://localhost:3000
 # 🔧 API: http://localhost:8000
 # 📚 Документация API: http://localhost:8000/docs
 # 🗄️ База данных: localhost:5432
 
+# Остановка
+docker-compose down
+```
 
 ### Вариант 2: Локально
 ```bash
-# Проверка установки
-./test-local.sh
-
 # Терминал 1 - Бэкенд
 cd backend
 source ../venv/bin/activate
 uvicorn app.main:app --reload
 
 # Терминал 2 - Фронтенд
-cd frontend
+cd frontend/frontend_project
 npm run dev
 ```
 
@@ -71,7 +70,7 @@ pip install -r requirements.txt
 
 # Настройте базу данных (если используете PostgreSQL)
 # Создайте файл .env в папке backend:
-echo "DATABASE_URL=postgresql://user:password@localhost/medical_tests" > .env
+echo "DATABASE_URL=postgresql://postgres:3891123@localhost/medical_application" > .env
 
 # Или для SQLite (по умолчанию):
 echo "DATABASE_URL=sqlite:///./medical_tests.db" > .env
@@ -87,7 +86,7 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 ```bash
 # Откройте новый терминал и перейдите в папку фронтенда
-cd frontend
+cd frontend/frontend_project
 
 # Установите зависимости
 npm install
@@ -106,8 +105,8 @@ npm run dev
 | GET | `/api/v1/tests` | Получить список всех тестов |
 | GET | `/api/v1/tests/{id}` | Получить тест по ID |
 | POST | `/api/v1/tests` | Создать новый тест |
-| PUT | `/api/v1/tests/{id}` | Обновить тест |
 | DELETE | `/api/v1/tests/{id}` | Удалить тест |
+| DELETE | `/api/v1/tests/` | Удалить все тесты |
 
 ### Примеры запросов
 
@@ -130,9 +129,10 @@ const response = await fetch('http://localhost:8000/api/v1/tests', {
     duration: 30,
     questions: [
       {
-        question_txt: 'Вопрос теста',
+        question_text: 'Вопрос теста',
         options: ['Вариант 1', 'Вариант 2', 'Вариант 3'],
-        answer: [0] // Индекс правильного ответа
+        correct_answers: [0], // Индекс правильного ответа
+        question_type: 'multiple_choice'
       }
     ]
   })
@@ -166,6 +166,13 @@ interface TestCreate {
   description?: string;
   duration: number;
   questions: QuestionCreate[];
+}
+
+interface User {
+  id: string;
+  email: string;
+  name: string;
+  credits: number;
 }
 ```
 
@@ -225,22 +232,35 @@ npm run build
 
 ```
 Medical_application_Tests/
+├── alembic/                  # Миграции БД (корневой уровень)
+│   ├── versions/             # Файлы миграций
+│   └── env.py               # Конфигурация Alembic
 ├── backend/
 │   ├── app/
-│   │   ├── api/endpoints/     # API эндпоинты
-│   │   ├── core/              # Конфигурация
-│   │   ├── db/                # Модели и CRUD
-│   │   │   ├── models/        # SQLAlchemy модели
-│   │   │   └── crud/          # CRUD операции
-│   │   └── schemas/           # Pydantic схемы
-│   ├── alembic/               # Миграции БД
-│   ├── requirements.txt       # Python зависимости
-│   └── Dockerfile            # Docker образ
+│   │   ├── api/
+│   │   │   ├── dependencies.py  # Зависимости API
+│   │   │   └── endpoints/       # API эндпоинты
+│   │   │       └── tests.py     # Эндпоинты тестов
+│   │   ├── core/                # Конфигурация
+│   │   ├── db/
+│   │   │   ├── models/          # SQLAlchemy модели
+│   │   │   │   ├── base.py
+│   │   │   │   ├── test.py
+│   │   │   │   ├── questions.py
+│   │   │   │   └── user.py
+│   │   │   ├── crud/            # CRUD операции
+│   │   │   └── session.py       # Сессии БД
+│   │   ├── schemas/             # Pydantic схемы
+│   │   └── main.py              # Точка входа
+│   ├── requirements.txt         # Python зависимости
+│   └── Dockerfile              # Docker образ
 ├── frontend/
-│   ├── app/                   # Next.js приложение
-│   ├── package.json           # Node.js зависимости
-│   └── Dockerfile            # Docker образ
-├── docker-compose.yml         # Docker Compose
+│   └── frontend_project/       # Next.js приложение
+│       ├── app/                # App Router
+│       ├── package.json        # Node.js зависимости
+│       └── next.config.ts      # Конфигурация Next.js
+├── docker-compose.yml          # Docker Compose
+├── alembic.ini                # Конфигурация Alembic
 ├── venv/                      # Python виртуальная среда
 └── README.md                  # Эта документация
 ```
@@ -335,7 +355,7 @@ npm run build
 
 **Статус проекта**: ✅ Готово к использованию
 - Бэкенд: FastAPI + PostgreSQL + Alembic
-- Фронтенд: Next.js + TypeScript
+- Фронтенд: Next.js + TypeScript + Tailwind CSS
 - Docker контейнеры настроены
 - API документация: http://localhost:8000/docs
 
