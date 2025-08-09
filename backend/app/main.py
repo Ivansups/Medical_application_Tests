@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from app.db import get_db
-from api.endpoints import tests
+from app.api.endpoints import tests
 
 app = FastAPI(title="Medical Tests API", version="1.0.0")
 
