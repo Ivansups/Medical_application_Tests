@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from app.db import get_db
-from app.api.endpoints import tests
+from app.api.endpoints import tests, auth
 
 app = FastAPI(title="Medical Tests API", version="1.0.0")
 
@@ -15,6 +15,7 @@ app.add_middleware(
 )
 
 app.include_router(tests.router, prefix="/api/v1", tags=["tests"])
+app.include_router(auth.router, prefix="/api/v1/auth", tags=["authentication"])
 
 @app.get("/")
 def read_root(db: Session = Depends(get_db)):
