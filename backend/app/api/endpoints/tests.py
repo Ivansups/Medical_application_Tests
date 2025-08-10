@@ -5,7 +5,7 @@ import logging
 from uuid import UUID  # Добавлен импорт UUID
 
 from app.api.dependencies import get_db
-from app.schemas.test import TestCreate, TestOut  # Добавлен TestOut для документации
+from app.schemas.test import TestCreate
 from app.db.crud.crud import delete_all_tests, delete_test_by_id, get_tests, create_test, get_test_by_id
 
 # Настройка логирования
@@ -34,7 +34,7 @@ def delete_all_tests_endpoint(db: Session = Depends(get_db)):
         logger.error(f"Error deleting all tests: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
-@router.get("/tests", response_model=List[TestOut])
+@router.get("/tests", response_model=List[TestCreate])
 def get_all_tests_endpoint(db: Session = Depends(get_db), skip: int = 0, limit: int = 10):
     try:
         return get_tests(db, skip=skip, limit=limit)
@@ -42,7 +42,7 @@ def get_all_tests_endpoint(db: Session = Depends(get_db), skip: int = 0, limit: 
         logger.error(f"Error fetching tests: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
-@router.post("/tests", response_model=TestOut, status_code=201)
+@router.post("/tests", response_model=TestCreate, status_code=201)
 def create_new_test_endpoint(test: TestCreate, db: Session = Depends(get_db)):
     logger.info(f"Creating new test: '{test.title}' with {len(test.questions)} questions")
     
@@ -60,7 +60,7 @@ def create_new_test_endpoint(test: TestCreate, db: Session = Depends(get_db)):
         logger.exception(f"Unexpected error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
-@router.get("/tests/{test_id}", response_model=TestOut)
+@router.get("/tests/{test_id}", response_model=TestCreate)
 def get_test_by_id_endpoint(test_id: UUID, db: Session = Depends(get_db)):
     try:
         db_test = get_test_by_id(db, test_id=test_id)

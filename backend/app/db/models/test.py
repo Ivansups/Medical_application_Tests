@@ -8,7 +8,8 @@ from sqlalchemy.orm import relationship
 class Test(Base):
     __tablename__ = 'tests'
 
-    test_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    test_id = Column(Integer, nullable=False, unique=True)  # Это поле должно быть    
     title = Column(String(255), nullable=False)
     description = Column(String(255))
     created_at = Column(DateTime, default=datetime.utcnow)
