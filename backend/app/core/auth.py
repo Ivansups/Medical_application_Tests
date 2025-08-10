@@ -1,3 +1,4 @@
+import os
 from datetime import datetime, timedelta
 from typing import Optional, Union
 from fastapi import Depends, HTTPException, status
@@ -10,10 +11,10 @@ from pydantic import BaseModel
 from ..db.session import get_db
 from ..db.models.user import User
 
-# Конфигурация (лучше вынести в .env)
-SECRET_KEY = "your-secret-key-change-this-in-production"  # Используйте сложный ключ на практике!
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+# Конфигурация из переменных окружения
+SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-change-this-in-production")
+ALGORITHM = os.getenv("ALGORITHM", "HS256")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
 
 # Схема OAuth2 для пароля
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")

@@ -31,13 +31,24 @@
 
 ## Что нужно сделать:
 
-### 1. **Установить зависимости:**
+### 1. **Для локальной разработки (без Docker):**
+
+#### Установить зависимости:
 ```bash
 cd backend
 pip install -r requirements.txt
 ```
 
-### 2. **Создать миграцию для обновления таблицы пользователей:**
+**Примечание:** Если возникают проблемы с импортами `jose` или `passlib`, выполните:
+```bash
+# Удалить неправильный пакет jose (если установлен)
+pip uninstall jose -y
+
+# Установить правильные пакеты
+pip install "python-jose[cryptography]" "passlib[bcrypt]" python-multipart
+```
+
+#### Создать миграцию для обновления таблицы пользователей:
 ```bash
 # Из корневой директории проекта
 source venv/bin/activate
@@ -45,7 +56,32 @@ alembic revision --autogenerate -m "update_user_model"
 alembic upgrade head
 ```
 
+### 2. **Для Docker (рекомендуется):**
+
+#### Запустить с Docker:
+```bash
+# Из корневой директории проекта
+./start_docker.sh
+```
+
+Или вручную:
+```bash
+# Остановить существующие контейнеры
+docker-compose down
+
+# Пересобрать образы
+docker-compose build --no-cache
+
+# Запустить приложение
+docker-compose up -d
+
+# Проверить логи
+docker-compose logs -f api
+```
+
 ### 3. **Настроить переменные окружения:**
+
+#### Для локальной разработки:
 Создайте файл `.env` в папке `backend/`:
 ```env
 # Database
@@ -60,18 +96,16 @@ ACCESS_TOKEN_EXPIRE_MINUTES=30
 ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
 ```
 
-### 4. **Обновить конфигурацию в `app/core/auth.py`:**
-Замените хардкод на переменные окружения:
-```python
-import os
-from dotenv import load_dotenv
+#### Для Docker:
+Переменные окружения уже настроены в `docker-compose.yml`:
+- `DATABASE_URL`: postgresql+psycopg://postgres:3891123@db:5432/medical_application
+- `SECRET_KEY`: your-super-secret-key-change-this-in-production
+- `ALGORITHM`: HS256
+- `ACCESS_TOKEN_EXPIRE_MINUTES`: 30
+- `ALLOWED_ORIGINS`: http://localhost:3000,http://127.0.0.1:3000
 
-load_dotenv()
-
-SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-change-this-in-production")
-ALGORITHM = os.getenv("ALGORITHM", "HS256")
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
-```
+### 4. **Конфигурация уже обновлена:**
+Файл `app/core/auth.py` уже настроен для использования переменных окружения.
 
 ## Доступные API эндпоинты:
 
