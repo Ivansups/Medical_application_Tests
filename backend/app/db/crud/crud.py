@@ -18,7 +18,7 @@ def delete_test_by_id(db: Session, test_id: UUID):
         test = db.query(Test).filter(Test.id == test_id).first()
         if not test:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND
+                status_code=status.HTTP_404_NOT_FOUND,
                 detail="Тест не найден!!!"
             )
         db.delete(test)
@@ -27,7 +27,7 @@ def delete_test_by_id(db: Session, test_id: UUID):
     except SQLAlchemyError as e:
         db.rollback()
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Ошибка базы данных: {str(e)}"
         )
 
@@ -43,7 +43,7 @@ def delete_all_tests(db: Session):
     except SQLAlchemyError as e:
         db.rollback
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Ошибка базы данных: {str(e)}"            
         )
 
