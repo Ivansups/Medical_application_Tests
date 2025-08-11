@@ -6,7 +6,7 @@ from uuid import UUID
 class QuestionCreate(BaseModel):
     question_text: str
     options: Optional[List[str]] = None
-    answer: Optional[List[int]] = None  # Здесь хранится индекс правильного ответа из List
+    correct_answers: Optional[List[int]] = None  # Здесь хранится индекс правильного ответа из List
     question_type: str = "multiple_choice"
 
 class TestCreate(BaseModel):

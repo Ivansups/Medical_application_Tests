@@ -41,7 +41,7 @@ def delete_all_tests(db: Session):
             "deleted_tests": deleted_count
         }        
     except SQLAlchemyError as e:
-        db.rollback
+        db.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Ошибка базы данных: {str(e)}"            
@@ -57,7 +57,7 @@ def create_test(db: Session, test_data: TestCreate):
     
     # Валидация вопросов
     for i, question in enumerate(test_data.questions):
-        logger.info(f"Validating question {i+1}: type={question.question_type}, has_options={question.options is not None}, answer={question.answer}")
+        logger.info(f"Validating question {i+1}: type={question.question_type}, has_options={question.options is not None}, correct_answers={question.correct_answers}")
         
         # Для вопросов с выбором проверяем индексы
         if question.question_type in ["single_choice", "multiple_choice"]:
@@ -68,9 +68,9 @@ def create_test(db: Session, test_data: TestCreate):
                     detail=f"Вопрос {i+1}: для типа '{question.question_type}' должны быть варианты ответа"
                 )
                 
-            if question.answer:
+            if question.correct_answers:
                 max_index = len(question.options) - 1
-                invalid_indices = [idx for idx in question.answer if idx > max_index or idx < 0]
+                invalid_indices = [idx for idx in question.correct_answers if idx > max_index or idx < 0]
                 
                 if invalid_indices:
                     logger.error(f"Question {i+1}: invalid answer indices {invalid_indices}, max allowed: {max_index}")
@@ -107,7 +107,7 @@ def create_test(db: Session, test_data: TestCreate):
                 test_id=test_obj.id,
                 question_text=q.question_text,
                 options=q.options,
-                correct_answers=q.answer,
+                correct_answers=q.correct_answers,
                 question_type=q.question_type
             )
             for i, q in enumerate(test_data.questions)
@@ -144,7 +144,7 @@ def create_test(db: Session, test_data: TestCreate):
             detail=f"Непредвиденная ошибка: {str(e)}"
         )
 
-def get_test_by_id(db: Session, test_id: str):
+def get_test_by_id(db: Session, test_id: UUID):
     """Получение теста по ID с вопросами"""
     test = db.query(Test).filter(Test.id == test_id).first()
     
@@ -158,3 +158,79 @@ def get_test_by_id(db: Session, test_id: str):
     test.questions = db.query(Question).filter(Question.test_id == test_id).all()
     
     return test
+
+def update_test(db: Session, test_id: UUID, test_data: TestCreate):
+    """Обновление теста с вопросами"""
+    logger.info(f"Starting test update for ID: {test_id}")
+    
+    try:
+        # Находим существующий тест
+        test = db.query(Test).filter(Test.id == test_id).first()
+        if not test:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Тест не найден"
+            )
+        
+        # Обновляем поля теста
+        test.title = test_data.title
+        test.description = test_data.description
+        test.duration = test_data.duration
+        
+        # Удаляем старые вопросы
+        db.query(Question).filter(Question.test_id == test_id).delete()
+        
+        # Валидация и создание новых вопросов
+        for i, question in enumerate(test_data.questions):
+            if question.question_type in ["single_choice", "multiple_choice"]:
+                if not question.options:
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail=f"Вопрос {i+1}: для типа '{question.question_type}' должны быть варианты ответа"
+                    )
+                    
+                if question.correct_answers:
+                    max_index = len(question.options) - 1
+                    invalid_indices = [idx for idx in question.correct_answers if idx > max_index or idx < 0]
+                    
+                    if invalid_indices:
+                        raise HTTPException(
+                            status_code=status.HTTP_400_BAD_REQUEST,
+                            detail=f"Вопрос {i+1}: недопустимые индексы ответов {invalid_indices}"
+                        )
+        
+        # Создаем новые вопросы
+        questions = [
+            Question(
+                test_id=test_id,
+                question_text=q.question_text,
+                options=q.options,
+                correct_answers=q.correct_answers,
+                question_type=q.question_type
+            )
+            for q in test_data.questions
+        ]
+        
+        db.bulk_save_objects(questions)
+        db.commit()
+        db.refresh(test)
+        
+        logger.info(f"Test {test_id} updated successfully")
+        return test
+        
+    except HTTPException:
+        raise
+    except SQLAlchemyError as e:
+        db.rollback()
+        logger.error(f"SQLAlchemy error during update: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Ошибка базы данных: {str(e)}"
+        )
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Unexpected error during update: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Непредвиденная ошибка: {str(e)}"
+        )

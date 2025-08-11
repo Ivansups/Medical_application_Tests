@@ -6,7 +6,7 @@ from uuid import UUID  # Добавлен импорт UUID
 
 from app.api.dependencies import get_db
 from app.schemas.test import TestCreate
-from app.db.crud.crud import delete_all_tests, delete_test_by_id, get_tests, create_test, get_test_by_id
+from app.db.crud.crud import delete_all_tests, delete_test_by_id, get_tests, create_test, get_test_by_id, update_test
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO)
@@ -72,3 +72,18 @@ def get_test_by_id_endpoint(test_id: UUID, db: Session = Depends(get_db)):
     except Exception as e:
         logger.error(f"Error fetching test {test_id}: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
+
+@router.put("/tests/{test_id}", response_model=TestCreate)
+def update_test_endpoint(test_id: UUID, test: TestCreate, db: Session = Depends(get_db)):
+    logger.info(f"Updating test {test_id}: '{test.title}' with {len(test.questions)} questions")
+    
+    try:
+        result = update_test(db=db, test_id=test_id, test_data=test)
+        logger.info(f"Test updated successfully: {result.id}")
+        return result
+    except HTTPException as e:
+        logger.error(f"Validation error: {e.detail}")
+        raise
+    except Exception as e:
+        logger.exception(f"Unexpected error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
