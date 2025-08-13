@@ -88,13 +88,32 @@ export async function deleteTestByID(test_id:UUID) {
             method: "DELETE",
             headers:{
                 'Content-Type': 'application/json',
-            },
+            }
         }
         )
         if (!res.ok) {
                 const errorData = await res.json();
                 throw new Error(errorData.detail || `HTTP ${res.status} - Failed to update test`);
         }
+    } catch (error) {
+        console.log(error)
+        throw error
+    }
+}
+
+export async function deleteAllTests() {
+    try {
+        const res = await fetch(`${API_BASE_URL}/test/`, {
+            method: "DELETE",
+            headers:{
+                'Content-Type': 'application/json',
+            }
+        })
+        if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(errorData.detail || `HTTP ${res.status} - Failed to update test`);
+        }
+        return {'message': 'Все задачи удалены!'}
     } catch (error) {
         console.log(error)
         throw error
