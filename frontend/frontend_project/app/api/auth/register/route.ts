@@ -57,3 +57,69 @@
 //     )
 //   }
 // }
+import { NextRequest, NextResponse } from "next/server"
+import bcrypt from "bcryptjs"
+import prisma from "@/lib/prisma" // если используете Prisma
+import { z } from "zod" // для валидации данных
+import { th } from "zod/locales"
+
+const registerSchema = z.object({
+    name: z.string()
+        .min(3, "Min lenght is 3 characters")
+        .max(50, "Cannot exeed 50 characters"),
+    email: z.string()
+        .email("Ivalid email adress"),
+    password: z.string()
+        .min(8, "Password must be at least 8 characters")
+        .regex(/[A-z]/, "Password must contain at least one uppercase letter")
+        .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+        .regex(/[0-9]/, "Password must contain at least one numbeer")
+        .regex(/[!@#$%^&*]/, "Password must contain at least one special character"),
+    })
+
+export async function POST(request: NextRequest) {
+    try {
+        const reqestBody = await request.json()
+        const validationResult = registerSchema.safeParse(reqestBody)
+    if (!validationResult.success) {
+      return NextResponse.json(
+        { status: 400 }
+      )
+    }
+    // Проверяю, не существует ли пользователь с таким же email
+    const {name, email, password} = validationResult.data
+        const existingUser = await prisma.user.findUnique({
+      where: { email }
+    })
+    if (existingUser){
+        return NextResponse.json(
+        { error: "User with this email already exists" },
+        { status: 409 }
+        )
+    }
+    const saltRaunds = 12
+    // Создаю нового пользователя
+    const hashedPassword = await bcrypt.hash(password, saltRaunds)
+    const newUser = await prisma.user.create({
+        name,
+        email,
+        password: hashedPassword
+    })
+    const { password: _, ...safeUserData } = newUser
+    return NextResponse.json(
+      { 
+        message: "User registered successfully",
+        user: safeUserData 
+      },
+      { status: 201 } // Все прошло успешно
+    )
+    
+    } catch (error) {
+    console.error("Registration error:", error)
+    
+    return NextResponse.json(
+      { error: "Internal server error" }, 
+      { status: 500 }
+    )
+  }
+}
