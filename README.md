@@ -1,95 +1,55 @@
-# Проект: Обучение разработке  
+## Medical Application Tests
 
-## Структура  
-- `backend_dev.md` — гайд по бэкенду (БД, API, авторизация).  
-- `frontend_dev.md` — гайд по фронтенду (компоненты, запросы).  
-- `learning/` — примеры кода для тренировки.  
+Полноценный шаблон приложения «Тесты для медицинского обучения». Бэкенд на FastAPI/PostgreSQL, фронтенд на Next.js/NextAuth/Prisma. В репозитории есть готовые CRUD-эндпоинты для тестов и базовая аутентификация через JWT.
 
-## Как использовать  
-1. Копируйте код из файлов в свой проект.  
-2. Для обучения — редактируйте файлы в `learning/`.  
+### Структура
+- `backend/` — FastAPI, SQLAlchemy, Alembic, JWT
+- `frontend/` — Next.js (App Router), NextAuth, Prisma
+- `Dev_back.md` — учебник и гайд для бэкенда
+- `Dev_front.md` — учебник и гайд для фронтенда
+
+### Требования
+- Python 3.11+
+- Node.js 18+
+- PostgreSQL 14+
+
+### Быстрый запуск
+1) Бэкенд
+```
+cd backend
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env  # отредактируй под себя
+alembic upgrade head
+uvicorn app.main:app --reload --port 8000
+```
+2) Фронтенд
+```
+cd frontend/frontend_project
+npm i
+cp .env.example .env  # отредактируй под себя
+npm run dev
 ```
 
----
+### Ключевые возможности
+- CRUD тестов: создание/обновление/получение/удаление тестов и вопросов
+- JWT-аутентификация: регистрация, логин, получение профиля
+- CORS готов к работе с фронтом на `http://localhost:3000`
 
-### 2. **Гайд для бэкенд-разработчика** (`backend_dev.md`)  
-```markdown backend_dev.md
-# Бэкенд: Шпаргалка  
+### Интеграция фронт↔бэк
+- Бэкенд публикует API под префиксом `/api/v1`.
+- Фронт должен использовать `NEXT_PUBLIC_API_URL=http://localhost:8000` и вызывать пути вида `/api/v1/...`.
+- Рекомендуется Credentials-провайдер в NextAuth, который дергает `/api/v1/auth/login` (см. `Dev_front.md`).
 
-## 1. Подключение к PostgreSQL  
-```python
-# main.py  
-from sqlalchemy import create_engine  
+### Дорожная карта
+- Расширение доменной модели: попытки прохождения, результаты, аналитика
+- Роли/права пользователей
+- Улучшение DX: единая клиентская библиотека API во фронте, генерация типов по OpenAPI
+- Тестирование (unit/e2e) и CI
+- Production-хардненинг: rate limit, audit logs, observability
 
-engine = create_engine("postgresql://user:password@localhost/db_name")  
+### Документация для разработчиков
+- Бэкенд: см. `Dev_back.md`
+- Фронтенд: см. `Dev_front.md`
 
-# Пример запроса  
-with engine.connect() as conn:  
-    result = conn.execute("SELECT * FROM users;")  
-    print(result.fetchall())  
-```  
-
-## 2. JWT-авторизация (FastAPI)  
-```python
-# auth.py  
-from fastapi import Depends, HTTPException, status  
-from fastapi.security import OAuth2PasswordBearer  
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")  
-
-def get_current_user(token: str = Depends(oauth2_scheme)):  
-    # Проверка токена  
-    if token != "valid_token":  
-        raise HTTPException(status_code=401, detail="Invalid token")  
-    return {"user_id": 1}  
-```  
-*(Добавьте больше примеров по запросу!)*  
-```
-
----
-
-### 3. **Гайд для фронтенд-разработчика** (`frontend_dev.md`)  
-```markdown frontend_dev.md
-# Фронтенд: Шпаргалка  
-
-## 1. Компонент на React  
-```jsx
-// App.js  
-import React, { useState } from 'react';  
-
-function App() {  
-  const [data, setData] = useState(null);  
-
-  const fetchData = async () => {  
-    const response = await fetch("/api/data");  
-    setData(await response.json());  
-  };  
-
-  return <button onClick={fetchData}>Загрузить данные</button>;  
-}  
-```  
-
-## 2. Запросы к API (Axios)  
-```javascript
-// api.js  
-import axios from 'axios';  
-
-axios.get("/api/users")  
-  .then(response => console.log(response.data))  
-  .catch(error => console.error(error));  
-```  
-*(Ещё примеры? Уточните технологии!)*  
-```
-
----
-
-### 4. **Обучающие файлы** (`learning/`)  
-- `db_learning.md` — SQL-тренировка:  
-  ```markdown learning/db_learning.md
-  ```sql
-  -- Создание таблицы  
-  CREATE TABLE users (id SERIAL PRIMARY KEY, name VARCHAR(50));  
-
-  -- Вставка данных  
-  INSERT INTO users (name) VALUES ('Test User');  
-  ```  
+Вкладывайся небольшими PR: одна существенная задача — один PR, тесты и описание изменений обязательны.
