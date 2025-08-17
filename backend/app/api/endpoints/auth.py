@@ -3,6 +3,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
+from app.schemas.auth import LoginData
+
 from ...core.auth import (
     authenticate_user,
     create_access_token,
@@ -55,7 +57,7 @@ def login_for_access_token(
     return {"access_token": access_token, "token_type": "bearer"}
 
 @router.post("/login", response_model=Token)
-def login(user_data: UserLogin, db: Session = Depends(get_db)):
+def login(user_data: LoginData, db: Session = Depends(get_db)):  # ← Используй LoginData из schemas
     """Альтернативный эндпоинт для входа через JSON"""
     user = authenticate_user(db, user_data.email, user_data.password)
     if not user:
