@@ -4,9 +4,9 @@ from typing import List
 import logging
 from uuid import UUID  # Добавлен импорт UUID
 
-from app.api.dependencies import get_db
+from app.db.session import get_db
 from app.schemas.test import TestCreate
-from app.db.crud.crud import delete_all_tests, delete_test_by_id, get_tests, create_test, get_test_by_id, update_test
+from app.crud.crud import delete_all_tests, delete_test_by_id, get_tests, create_test, get_test_by_id, update_test
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO)

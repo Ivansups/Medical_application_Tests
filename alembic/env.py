@@ -11,8 +11,8 @@ load_dotenv()
 
 # Настраиваем пути для импорта
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(os.getcwd())  # Корень проекта
-sys.path.append(os.path.join(os.getcwd(), 'backend'))  # Путь к backend
+sys.path.append(BASE_DIR)  # Корень проекта
+sys.path.append(os.path.join(BASE_DIR, 'backend'))  # Путь к backend
 
 # Теперь импортируем модули после настройки путей
 from app.core.config import settings

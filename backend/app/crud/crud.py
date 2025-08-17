@@ -2,8 +2,8 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 import logging
-from ..models.questions import Question
-from ..models.test import Test
+from app.db.models.questions import Question
+from app.db.models.test import Test
 from app.schemas.test import TestCreate
 
 # Настройка логирования

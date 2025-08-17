@@ -8,8 +8,8 @@ from jose import jwt, JWTError
 from passlib.context import CryptContext
 from pydantic import BaseModel
 
-from ..db.session import get_db
-from ..db.models.user import User
+from app.db.session import get_db
+from app.db.models.user import User
 
 # Конфигурация из переменных окружения
 SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-change-this-in-production")
