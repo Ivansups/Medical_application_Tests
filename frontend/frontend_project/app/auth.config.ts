@@ -1,5 +1,3 @@
-import type { NextAuthConfig } from "next-auth"
-
 export const authConfig = {
   pages: {
     signIn: '/auth/signin',
@@ -7,7 +5,7 @@ export const authConfig = {
     error: '/auth/error',
   },
   callbacks: {
-    authorized({ auth, request: { nextUrl } }) {
+    authorized({ auth, request: { nextUrl } }: { auth: any; request: { nextUrl: URL } }) {
       const isLoggedIn = !!auth?.user
       const isOnDashboard = nextUrl.pathname.startsWith('/dashboard')
       if (isOnDashboard) {
@@ -20,4 +18,4 @@ export const authConfig = {
     },
   },
   providers: [], // configured on auth.ts
-} satisfies NextAuthConfig
+}
