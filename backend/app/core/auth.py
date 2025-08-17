@@ -10,7 +10,7 @@ from pydantic import BaseModel
 
 from app.db.session import get_db
 from app.db.models.user import User
-from backend.app.schemas.auth import TokenData
+from app.schemas.auth import TokenData
 
 # Конфигурация из переменных окружения
 SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-change-this-in-production")
@@ -18,8 +18,10 @@ ALGORITHM = os.getenv("ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
 
 # Схема OAuth2 для пароля
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/auth/login")
-
+oauth2_scheme = OAuth2PasswordBearer(
+    tokenUrl="/api/v1/auth/token", 
+    scheme_name="JWT"
+)
 # Контекст для хеширования паролей
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
