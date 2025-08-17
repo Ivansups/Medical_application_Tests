@@ -1,0 +1,181 @@
+/* Стили для страницы входа в систему */
+
+.login-container {
+    font-family: 'Times New Roman', serif;
+    background: linear-gradient(135deg, #e5e7eb, #d1d5db);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+    padding: 20px;
+}
+
+.login-window {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 500px;
+    overflow: hidden;
+}
+
+.button_reg {
+    display: inline-block;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: bold;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    font-family: 'Times New Roman', serif;
+    font-size: 16px;
+    width: 100%;
+    max-width: 200px;
+    margin: 0 10px;
+}
+
+.button_reg:hover {
+    background-color: #3b82f6;
+    color: white !important;
+    transform: translateY(-2px);
+}
+
+.button_reg2 {
+    display: inline-block;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: bold;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    font-family: 'Times New Roman', serif;
+    font-size: 16px;
+    width: 100%;
+    max-width: 200px;
+    margin: 0 10px;
+    background-color: #4b5563;
+    color: white;
+}
+
+.button_reg2:hover {
+    background-color: #3b82f6;
+    transform: translateY(-2px);
+}
+
+.oauth-section {
+    background-color: #f3f4f6;
+    padding: 20px;
+    margin-top: 20px;
+}
+
+.input-field {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-family: 'Times New Roman', serif;
+    font-size: 16px;
+    margin-bottom: 16px;
+    transition: all 0.3s ease;
+}
+
+.input-field:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.submit-button {
+    background-color: #3b82f6;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: bold;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    font-family: 'Times New Roman', serif;
+    font-size: 16px;
+    width: 100%;
+    margin-top: 8px;
+}
+
+.submit-button:hover {
+    background-color: #2563eb;
+    transform: translateY(-2px);
+}
+
+.submit-button:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.divider {
+    display: flex;
+    align-items: center;
+    margin: 20px 0;
+}
+
+.divider::before, .divider::after {
+    content: "";
+    flex: 1;
+    border-bottom: 1px solid #d1d5db;
+}
+
+.divider-text {
+    padding: 0 10px;
+    color: #6b7280;
+}
+
+.error-message {
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #dc2626;
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    font-size: 14px;
+}
+
+.success-message {
+    background-color: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #16a34a;
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    font-size: 14px;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 640px) {
+    .login-container {
+        padding: 10px;
+    }
+    
+    .login-window {
+        max-width: 100%;
+    }
+    
+    .button_reg,
+    .button_reg2 {
+        max-width: 150px;
+        margin: 5px;
+        font-size: 14px;
+        padding: 10px 16px;
+    }
+    
+    .flex {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .input-field {
+        font-size: 16px; /* Предотвращает зум на iOS */
+    }
+} 

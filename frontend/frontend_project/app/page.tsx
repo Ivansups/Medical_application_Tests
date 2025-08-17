@@ -1,103 +1,328 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { signIn } from "next-auth/react";
+import Link from "next/link";
+import "./register-page.css";
+
+export default function RegisterPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: ""
+  });
+  const [errors, setErrors] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: ""
+  });
+  const [serverError, setServerError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState(0);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+
+  // Обработка ошибок из URL параметров
+  useEffect(() => {
+    const error = searchParams.get('error');
+    
+    if (error) {
+      const errorMessages: Record<string, string> = {
+        'CredentialsSignin': 'Неверные данные для входа',
+        'OAuthSignin': 'Ошибка при входе через социальную сеть',
+        'OAuthCallback': 'Ошибка при обработке ответа от социальной сети',
+        'OAuthCreateAccount': 'Ошибка при создании аккаунта',
+        'EmailCreateAccount': 'Ошибка при создании аккаунта по email',
+        'Callback': 'Ошибка при обработке ответа',
+        'OAuthAccountNotLinked': 'Этот email уже используется другим методом входа',
+        'EmailAlreadyExists': 'Пользователь с таким email уже существует',
+        'WeakPassword': 'Пароль слишком слабый',
+        'default': 'Произошла неизвестная ошибка'
+      };
+      
+      setServerError(errorMessages[error] || errorMessages['default']);
+    }
+  }, [searchParams]);
+
+  // Валидация формы
+  const validateForm = () => {
+    const newErrors = {
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: ""
+    };
+    
+    let isValid = true;
+    
+    if (!formData.name.trim()) {
+      newErrors.name = "Имя обязательно";
+      isValid = false;
+    } else if (formData.name.length < 2) {
+      newErrors.name = "Имя должно содержать минимум 2 символа";
+      isValid = false;
+    }
+    
+    if (!formData.email.trim()) {
+      newErrors.email = "Email обязателен";
+      isValid = false;
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = "Пожалуйста, введите корректный email";
+      isValid = false;
+    }
+    
+    if (!formData.password) {
+      newErrors.password = "Пароль обязателен";
+      isValid = false;
+    } else if (formData.password.length < 8) {
+      newErrors.password = "Пароль должен содержать минимум 8 символов";
+      isValid = false;
+    }
+    
+    if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = "Пароли не совпадают";
+      isValid = false;
+    }
+    
+    if (!termsAccepted) {
+      setServerError("Пожалуйста, примите условия использования");
+      isValid = false;
+    }
+    
+    setErrors(newErrors);
+    return isValid;
+  };
+
+  // Обработчик изменения полей
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    
+    // Расчет сложности пароля
+    if (name === "password") {
+      let strength = 0;
+      if (value.length > 0) strength += 20;
+      if (value.length >= 8) strength += 30;
+      if (/[A-Z]/.test(value)) strength += 15;
+      if (/[0-9]/.test(value)) strength += 15;
+      if (/[^A-Za-z0-9]/.test(value)) strength += 20;
+      
+      setPasswordStrength(Math.min(strength, 100));
+    }
+    
+    // Очистка ошибок при изменении
+    if (errors[name as keyof typeof errors]) {
+      setErrors(prev => ({ ...prev, [name]: "" }));
+    }
+  };
+
+  // Обработчик отправки формы
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setServerError("");
+    
+    if (!validateForm()) return;
+    
+    setIsLoading(true);
+    
+    try {
+      // Регистрация пользователя
+      const registerResponse = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password
+        }),
+      });
+
+      const registerData = await registerResponse.json();
+      
+      if (!registerResponse.ok) {
+        throw new Error(registerData.message || "Ошибка регистрации");
+      }
+
+      // Автоматический вход после регистрации
+      const signInResult = await signIn("credentials", {
+        email: formData.email,
+        password: formData.password,
+        redirect: false,
+      });
+
+      if (signInResult?.error) {
+        throw new Error(signInResult.error);
+      }
+
+      // Перенаправление на защищенную страницу
+      router.push("/dashboard");
+    } catch (error: any) {
+      console.error("Registration error:", error);
+      setServerError(error.message || "Произошла ошибка при регистрации");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Обработчик OAuth входа
+  const handleOAuthSignIn = (provider: string) => {
+    signIn(provider, { callbackUrl: "/dashboard" });
+  };
+
+  // Определение цвета индикатора пароля
+  const getPasswordStrengthColor = () => {
+    if (passwordStrength < 40) return "#ef4444"; // red
+    if (passwordStrength < 70) return "#f59e0b"; // orange
+    return "#10b981"; // green
+  };
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+    <div className="registrationWindow">
+      <div className="innerContainer">
+        <h1 className="title">Регистрация</h1>
+        
+        {serverError && (
+          <div className="serverError">
+            {serverError}
+          </div>
+        )}
+        
+        <form id="registrationForm" className="form" onSubmit={handleSubmit}>
+          <div className="formGroup">
+            <label htmlFor="name" className="label">Имя</label>
+            <input
+              id="name"
+              name="name"
+              type="text"
+              value={formData.name}
+              onChange={handleChange}
+              className={`inputField ${errors.name ? "error" : ""}`}
+              placeholder="Введите ваше имя"
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            {errors.name && (
+              <div className="errorMessage">{errors.name}</div>
+            )}
+          </div>
+          
+          <div className="formGroup">
+            <label htmlFor="email" className="label">Email</label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleChange}
+              className={`inputField ${errors.email ? "error" : ""}`}
+              placeholder="Введите ваш email"
+            />
+            {errors.email && (
+              <div className="errorMessage">{errors.email}</div>
+            )}
+          </div>
+          
+          <div className="formGroup">
+            <label htmlFor="password" className="label">Пароль</label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              value={formData.password}
+              onChange={handleChange}
+              className={`inputField ${errors.password ? "error" : ""}`}
+              placeholder="Введите пароль"
+            />
+            <div className="passwordStrength">
+              <div 
+                className="strengthMeter" 
+                style={{
+                  width: `${passwordStrength}%`,
+                  backgroundColor: getPasswordStrengthColor()
+                }}
+              ></div>
+            </div>
+            {errors.password && (
+              <div className="errorMessage">{errors.password}</div>
+            )}
+          </div>
+          
+          <div className="formGroup">
+            <label htmlFor="confirmPassword" className="label">Подтвердите пароль</label>
+            <input
+              id="confirmPassword"
+              name="confirmPassword"
+              type="password"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              className={`inputField ${errors.confirmPassword ? "error" : ""}`}
+              placeholder="Повторите пароль"
+            />
+            {errors.confirmPassword && (
+              <div className="errorMessage">{errors.confirmPassword}</div>
+            )}
+          </div>
+          
+          <div className="termsCheckbox">
+            <input 
+              type="checkbox" 
+              id="terms" 
+              checked={termsAccepted}
+              onChange={(e) => setTermsAccepted(e.target.checked)}
+            />
+            <label htmlFor="terms" className="termsText">
+              Я согласен с <a href="#" className="link">условиями использования</a> и 
+              <a href="#" className="link">политикой конфиденциальности</a>
+            </label>
+          </div>
+          
+          <button 
+            type="submit" 
+            className="submitButton"
+            disabled={isLoading}
           >
-            Read our docs
-          </a>
+            {isLoading ? "Регистрация..." : "Зарегистрироваться"}
+          </button>
+        </form>
+        
+        <div className="divider">
+          <span className="dividerText">или</span>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        
+        <div className="oauthSection">
+          <p className="oauthTitle">Войти через социальные сети</p>
+          <div className="oauthButtons">
+            <button 
+              className="oauthButton"
+              onClick={() => handleOAuthSignIn("google")}
+            >
+              Google
+            </button>
+            <button 
+              className="oauthButton"
+              onClick={() => handleOAuthSignIn("github")}
+            >
+              GitHub
+            </button>
+          </div>
+        </div>
+        
+        <div className="loginLink">
+          <p className="loginText">
+            Уже есть аккаунт?{" "}
+            <Link href="/auth/signin" className="link">
+              Войти
+            </Link>
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
+
