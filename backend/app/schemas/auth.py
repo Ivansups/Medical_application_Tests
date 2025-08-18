@@ -12,6 +12,7 @@ class UserResponse(BaseModel):
     email: str
     name: Optional[str] = None
     is_active: bool
+    is_admin: bool
     created: datetime
 
     class Config:
