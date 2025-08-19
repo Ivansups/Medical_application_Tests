@@ -1,0 +1,139 @@
+/* Основной контейнер */
+.container {
+  font-family: 'Times New Roman', serif;
+  background: linear-gradient(135deg, #e5e7eb, #d1d5db);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0;
+  padding: 20px;
+}
+
+/* Окно ошибки */
+.errorWindow {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 500px;
+  overflow: hidden;
+}
+
+/* Контент внутри окна */
+.content {
+  padding: 2rem;
+}
+
+/* Код ошибки */
+.errorCode {
+  font-size: 3rem;
+  font-weight: bold;
+  color: #1f2937;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  line-height: 1;
+}
+
+/* Заголовок ошибки */
+.errorTitle {
+  font-size: 1.875rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+/* Контейнер сообщения */
+.messageContainer {
+  text-align: center;
+}
+
+/* Сообщение */
+.message {
+  color: #374151;
+  margin-bottom: 2rem;
+  font-size: 1.125rem;
+  line-height: 1.6;
+}
+
+/* Контейнер кнопки */
+.buttonContainer {
+  display: flex;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+/* Кнопка */
+.button {
+  background-color: #4b5563;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: bold;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  font-family: 'Times New Roman', serif;
+  font-size: 16px;
+  text-decoration: none;
+  display: inline-block;
+  min-width: 200px;
+}
+
+.button:hover {
+  background-color: #3b82f6;
+  transform: translateY(-2px);
+  text-decoration: none;
+  color: white;
+}
+
+.button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 640px) {
+  .container {
+    padding: 10px;
+  }
+  
+  .content {
+    padding: 1.5rem;
+  }
+  
+  .errorCode {
+    font-size: 2.5rem;
+  }
+  
+  .errorTitle {
+    font-size: 1.5rem;
+  }
+  
+  .message {
+    font-size: 1rem;
+  }
+  
+  .button {
+    min-width: 180px;
+    padding: 10px 20px;
+  }
+}
+
+/* Анимация появления */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.errorWindow {
+  animation: fadeInUp 0.6s ease-out;
+} 
