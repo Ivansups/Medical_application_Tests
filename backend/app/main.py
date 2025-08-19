@@ -5,6 +5,9 @@ from sqlalchemy.orm import Session
 from app.db import get_db
 from app.api.endpoints import tests_questions, auth
 import logging
+from fastapi import FastAPI
+from fastapi.openapi.docs import get_swagger_ui_html
+
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO)
@@ -20,9 +23,17 @@ async def global_exception_handler(request: Request, exc: Exception):
         content={"detail": "Internal server error"}
     )
 
+@app.get("/docs", include_in_schema=False)
+async def custom_swagger_ui_html():
+    return get_swagger_ui_html(
+        openapi_url=app.openapi_url,
+        title=app.title + " - Swagger UI",
+        swagger_js_url="/static/swagger-ui/swagger-ui-bundle.js",
+        swagger_css_url="/static/swagger-ui/swagger-ui.css",
+    )
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

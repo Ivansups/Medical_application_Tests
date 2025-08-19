@@ -10,6 +10,7 @@ from pydantic import BaseModel
 
 from app.db.session import get_db
 from app.db.models.user import User
+from app.schemas.auth import TokenData
 
 # Конфигурация из переменных окружения
 SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-change-this-in-production")
@@ -17,35 +18,14 @@ ALGORITHM = os.getenv("ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
 
 # Схема OAuth2 для пароля
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
+oauth2_scheme = OAuth2PasswordBearer(
+    tokenUrl="/api/v1/auth/token", 
+    scheme_name="JWT"
+)
 # Контекст для хеширования паролей
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # Pydantic модели для валидации
-class Token(BaseModel):
-    access_token: str
-    token_type: str
-
-class TokenData(BaseModel):
-    email: Optional[str] = None
-
-class UserCreate(BaseModel):
-    email: str
-    password: str
-
-class UserLogin(BaseModel):
-    email: str
-    password: str
-
-class UserResponse(BaseModel):
-    id: int
-    email: str
-    is_active: bool
-    created_at: datetime
-
-    class Config:
-        from_attributes = True
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     """Создает JWT токен доступа"""
