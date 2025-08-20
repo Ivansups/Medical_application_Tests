@@ -4,7 +4,7 @@ import { useState } from "react"
 import { signIn, getSession } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
-import "./signin-page.css"
+import "../auth-common.css"
 
 export default function SignInPage() {
   const [formData, setFormData] = useState({
@@ -69,68 +69,62 @@ export default function SignInPage() {
   }
 
   return (
-    <div className="login-container">
-      <div className="login-window">
-        <div className="p-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">
-            Вход в систему
-          </h1>
+    <div className="auth-container">
+      <div className="auth-window">
+        <div className="auth-content">
+          <h1 className="auth-title">Вход в систему</h1>
           
           {error && (
-            <div className="error-message">
+            <div className="auth-error-message">
               {error}
             </div>
           )}
           
           {success && (
-            <div className="success-message">
+            <div className="auth-error-message" style={{ backgroundColor: '#f0fdf4', color: '#16a34a', border: '1px solid #bbf7d0' }}>
               {success}
             </div>
           )}
           
-          <form onSubmit={handleSubmit} className="mb-6">
-            <div className="mb-4">
-              <label htmlFor="email" className="block text-gray-700 mb-2">
-                Email
-              </label>
+          <form onSubmit={handleSubmit}>
+            <div className="auth-form-group">
+              <label htmlFor="email" className="auth-label">Email</label>
               <input
                 type="email"
                 id="email"
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
-                className="input-field"
+                className="auth-input"
                 placeholder="Введите ваш email"
                 required
               />
             </div>
             
-            <div className="mb-4">
-              <label htmlFor="password" className="block text-gray-700 mb-2">
-                Пароль
-              </label>
+            <div className="auth-form-group">
+              <label htmlFor="password" className="auth-label">Пароль</label>
               <input
                 type="password"
                 id="password"
                 name="password"
                 value={formData.password}
                 onChange={handleInputChange}
-                className="input-field"
+                className="auth-input"
                 placeholder="Введите ваш пароль"
                 required
               />
             </div>
             
-            <div className="flex items-center mb-4">
-              <input
-                type="checkbox"
-                id="remember"
-                name="remember"
-                checked={formData.remember}
-                onChange={handleInputChange}
-                className="mr-2"
-              />
-              <label htmlFor="remember" className="text-gray-700">
+            <div className="auth-form-group">
+              <label className="auth-label">
+                <input
+                  type="checkbox"
+                  id="remember"
+                  name="remember"
+                  checked={formData.remember}
+                  onChange={handleInputChange}
+                  style={{ marginRight: '0.5rem' }}
+                />
                 Запомнить меня
               </label>
             </div>
@@ -138,47 +132,45 @@ export default function SignInPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="submit-button"
+              className="auth-button"
             >
               {isLoading ? "Вход..." : "Войти"}
             </button>
           </form>
 
-          <div className="divider">
-            <div className="divider-text">или</div>
+          <div className="auth-divider">
+            <span className="auth-divider-text">или</span>
           </div>
           
-          <div className="oauth-section rounded-lg">
-            <h2 className="text-xl font-bold text-gray-700 mb-4 text-center">
-              Войти через социальные сети
-            </h2>
-            <div className="flex justify-center space-x-4">
+          <div className="auth-oauth-section">
+            <p className="auth-oauth-title">Войти через социальные сети</p>
+            <div className="auth-oauth-buttons">
               <button
                 onClick={() => handleOAuthSignIn('google')}
                 disabled={isLoading}
-                className="button_reg2"
+                className="auth-oauth-button"
               >
                 Google
               </button>
               <button
                 onClick={() => handleOAuthSignIn('github')}
                 disabled={isLoading}
-                className="button_reg2"
+                className="auth-oauth-button"
               >
                 GitHub
               </button>
             </div>
           </div>
           
-          <div className="mt-6 text-center">
-            <p className="text-gray-600">
+          <div className="auth-form-group" style={{ textAlign: 'center', marginTop: '1.5rem' }}>
+            <p className="auth-message">
               Ещё нет аккаунта?{" "}
-              <Link href="/auth/register" className="text-blue-500 hover:underline">
+              <Link href="/auth/register" className="auth-link">
                 Зарегистрироваться
               </Link>
             </p>
-            <p className="text-gray-600 mt-2">
-              <Link href="/auth/forgot-password" className="text-blue-500 hover:underline">
+            <p className="auth-message" style={{ marginTop: '0.5rem' }}>
+              <Link href="/auth/forgot-password" className="auth-link">
                 Забыли пароль?
               </Link>
             </p>

@@ -59,9 +59,9 @@
 
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
-import "./error-page.css"
+import "../auth-common.css"
 
-export default function Home() {
+export default function AuthErrorPage() {
   const searchParams = useSearchParams()
   const error = searchParams.get('error')
 
@@ -75,35 +75,62 @@ export default function Home() {
         return 'Доступ запрещен'
       case 'OAuthAccountNotLinked':
         return 'Аккаунт не связан'
+      case 'OAuthSignin':
+        return 'Ошибка при входе через социальную сеть'
+      case 'OAuthCallback':
+        return 'Ошибка при обработке ответа от социальной сети'
+      case 'OAuthCreateAccount':
+        return 'Ошибка при создании аккаунта'
+      case 'EmailCreateAccount':
+        return 'Ошибка при создании аккаунта по email'
+      case 'Callback':
+        return 'Ошибка при обработке ответа'
+      case 'EmailAlreadyExists':
+        return 'Пользователь с таким email уже существует'
+      case 'WeakPassword':
+        return 'Пароль слишком слабый'
       default:
         return 'Произошла неизвестная ошибка'
     }
   }
 
   return (
-    <div className="error-container">
-      <div className="error-window">
-        <div className="p-8 text-center">
-          <h1 className="text-3xl font-bold text-gray-800 mb-4">Ошибка аутентификации</h1>
-          <p className="text-gray-600 mb-8">
-            Что-то пошло не так при попытке входа в систему. Пожалуйста, попробуйте снова.
-          </p>
+    <div className="auth-container">
+      <div className="auth-window">
+        <div className="auth-content">
+          <h1 className="auth-title">Ошибка аутентификации</h1>
           
-          <div className="text-red-500 mb-8 p-4 bg-red-50 rounded-lg">
+          <div className="auth-message">
+            Что-то пошло не так при попытке входа в систему. Пожалуйста, попробуйте снова.
+          </div>
+          
+          <div className="auth-error-message">
             Ошибка: {getErrorMessage(error)}
           </div>
           
-          <div className="flex justify-center mb-8">
+          <div className="auth-form-group">
             <Link href="/auth/signin">
-              <button className="button_reg" style={{ color: '#4b5563' }}>
+              <button className="auth-button">
                 Попробовать снова
               </button>
             </Link>
+          </div>
+          
+          <div className="auth-form-group">
             <Link href="/">
-              <button className="button_reg" style={{ color: '#4b5563' }}>
+              <button className="auth-button secondary">
                 На главную
               </button>
             </Link>
+          </div>
+          
+          <div className="auth-form-group" style={{ textAlign: 'center', marginTop: '1.5rem' }}>
+            <p className="auth-message">
+              Нужна помощь?{" "}
+              <Link href="/auth/register" className="auth-link">
+                Зарегистрироваться
+              </Link>
+            </p>
           </div>
         </div>
       </div>

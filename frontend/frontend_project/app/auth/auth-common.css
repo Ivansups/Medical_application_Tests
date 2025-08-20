@@ -1,0 +1,247 @@
+/* Общие стили для всех страниц аутентификации */
+
+/* Основной контейнер */
+.auth-container {
+  font-family: 'Times New Roman', serif;
+  background: linear-gradient(135deg, #e5e7eb, #d1d5db);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0;
+  padding: 20px;
+}
+
+/* Окно аутентификации */
+.auth-window {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 500px;
+  overflow: hidden;
+}
+
+/* Контент внутри окна */
+.auth-content {
+  padding: 2rem;
+}
+
+/* Заголовки */
+.auth-title {
+  font-size: 1.875rem;
+  font-weight: bold;
+  color: #1f2937;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+/* Поля ввода */
+.auth-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  font-family: 'Times New Roman', serif;
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.auth-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.auth-input.error {
+  border-color: #ef4444;
+}
+
+/* Метки полей */
+.auth-label {
+  display: block;
+  color: #374151;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+/* Сообщения об ошибках */
+.auth-error {
+  color: #ef4444;
+  font-size: 0.875rem;
+  margin-top: -0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.auth-error-message {
+  background-color: #fee2e2;
+  color: #dc2626;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+/* Кнопки */
+.auth-button {
+  background-color: #2563eb;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  font-weight: bold;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  font-family: 'Times New Roman', serif;
+  font-size: 1rem;
+  width: 100%;
+  margin-top: 0.5rem;
+  box-sizing: border-box;
+}
+
+.auth-button:hover {
+  background-color: #3b82f6;
+  transform: translateY(-2px);
+}
+
+.auth-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.auth-button.secondary {
+  background-color: #6b7280;
+}
+
+.auth-button.secondary:hover {
+  background-color: #4b5563;
+}
+
+/* Разделители */
+.auth-divider {
+  display: flex;
+  align-items: center;
+  margin: 1.25rem 0;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid #d1d5db;
+}
+
+.auth-divider-text {
+  padding: 0 0.625rem;
+  color: #6b7280;
+}
+
+/* OAuth секции */
+.auth-oauth-section {
+  background-color: #f3f4f6;
+  padding: 1.25rem;
+  margin-top: 1.25rem;
+  border-radius: 0.5rem;
+}
+
+.auth-oauth-title {
+  text-align: center;
+  color: #4b5563;
+  margin-bottom: 1rem;
+}
+
+.auth-oauth-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.auth-oauth-button {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  font-weight: bold;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  font-family: 'Times New Roman', serif;
+  font-size: 1rem;
+  width: 100%;
+  max-width: 200px;
+  background-color: #4b5563;
+  color: white;
+  box-sizing: border-box;
+}
+
+.auth-oauth-button:hover {
+  background-color: #3b82f6;
+  transform: translateY(-2px);
+}
+
+/* Ссылки */
+.auth-link {
+  color: #3b82f6;
+  text-decoration: underline;
+}
+
+.auth-link:hover {
+  color: #2563eb;
+}
+
+/* Группы форм */
+.auth-form-group {
+  margin-bottom: 1rem;
+}
+
+/* Сообщения */
+.auth-message {
+  color: #4b5563;
+  margin-bottom: 1rem;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 640px) {
+  .auth-container {
+    padding: 10px;
+  }
+  
+  .auth-content {
+    padding: 1.5rem;
+  }
+  
+  .auth-title {
+    font-size: 1.5rem;
+  }
+  
+  .auth-oauth-button {
+    max-width: 150px;
+    font-size: 0.875rem;
+    padding: 0.625rem 1rem;
+  }
+  
+  .auth-oauth-buttons {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+/* Анимации */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.auth-window {
+  animation: fadeInUp 0.6s ease-out;
+} 
