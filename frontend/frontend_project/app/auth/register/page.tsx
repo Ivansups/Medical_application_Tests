@@ -1,84 +1,10 @@
-// Страница регистрации новых пользователей
-// Если вы используете Credentials провайдер, вам понадобится эта страница
-
-// Импорты, которые понадобятся:
-// import { useState } from "react"
-// import { useRouter } from "next/navigation"
-// import { signIn } from "next-auth/react"
-
-
-  // Здесь нужно:
-  // 1. Создать форму регистрации с валидацией
-  // 2. Отправить данные на ваш API для создания пользователя
-  // 3. После успешной регистрации автоматически войти в систему
-  // 4. Обработать ошибки валидации и сервера
-  // 5. Добавить проверку паролей (подтверждение пароля)
-
-//   const router = useRouter() 
-//   const [formData, setFormData] = useState({
-//     name: "",
-//     email: "",
-//     password: "",
-//     confimPassword: ""
-//   })
-//   const [errors, setErrors] = useState({});
-//   const [serverError, setServerError] = useState("")
-//   const [isLoading, setIsLoading] = useState(false)
-
-//   const handleChange = (e) => {
-//     const {name, value } = e.target
-//     setFormData(prev => ({
-//       ...prev,
-//       [name]: value
-//     }))
-
-//     if (errors[name]) {
-//       setErrors(prev => {
-//         const newErrors = { ...prev }
-//         delete newErrors[name]
-//         return newErrors
-//       })
-//     }
-
-//   }
-  
-  
-//   return (
-//     <div>
-//       {/* 
-//         Здесь должна быть форма регистрации:
-        
-//         1. Поля: имя, email, пароль, подтверждение пароля
-//         2. Валидация на клиенте (длина пароля, формат email)
-//         3. Отправка данных на API
-//         4. Обработка ответа от сервера
-//         5. Автоматический вход после успешной регистрации
-//         6. Ссылка на страницу входа
-//       */}
-      
-//       <h1>Регистрация</h1>
-      
-//       {/* Пример структуры формы:
-//       <form onSubmit={handleSubmit}>
-//         <input type="text" placeholder="Имя" required />
-//         <input type="email" placeholder="Email" required />
-//         <input type="password" placeholder="Пароль" required />
-//         <input type="password" placeholder="Подтвердите пароль" required />
-//         <button type="submit">Зарегистрироваться</button>
-//       </form>
-      
-//       <p>Уже есть аккаунт? <a href="/auth/signin">Войти</a></p>
-//       */}
-//     </div>
-//   )
-// }
 'use client';
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
-import "./register-page.css";
+import "../auth-common.css";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -259,141 +185,146 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="registrationWindow">
-      <div className="innerContainer">
-        <h1 className="title">Регистрация</h1>
-        
-        {serverError && (
-          <div className="serverError">
-            {serverError}
-          </div>
-        )}
-        
-        <form id="registrationForm" className="form" onSubmit={handleSubmit}>
-          <div className="formGroup">
-            <label htmlFor="name" className="label">Имя</label>
-            <input
-              id="name"
-              name="name"
-              type="text"
-              value={formData.name}
-              onChange={handleChange}
-              className={`inputField ${errors.name ? "error" : ""}`}
-              placeholder="Введите ваше имя"
-            />
-            {errors.name && (
-              <div className="errorMessage">{errors.name}</div>
-            )}
-          </div>
+    <div className="auth-container">
+      <div className="auth-window">
+        <div className="auth-content">
+          <h1 className="auth-title">Регистрация</h1>
           
-          <div className="formGroup">
-            <label htmlFor="email" className="label">Email</label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              value={formData.email}
-              onChange={handleChange}
-              className={`inputField ${errors.email ? "error" : ""}`}
-              placeholder="Введите ваш email"
-            />
-            {errors.email && (
-              <div className="errorMessage">{errors.email}</div>
-            )}
-          </div>
-          
-          <div className="formGroup">
-            <label htmlFor="password" className="label">Пароль</label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              value={formData.password}
-              onChange={handleChange}
-              className={`inputField ${errors.password ? "error" : ""}`}
-              placeholder="Введите пароль"
-            />
-            <div className="passwordStrength">
-              <div 
-                className="strengthMeter" 
-                style={{
-                  width: `${passwordStrength}%`,
-                  backgroundColor: getPasswordStrengthColor()
-                }}
-              ></div>
+          {serverError && (
+            <div className="auth-error-message">
+              {serverError}
             </div>
-            {errors.password && (
-              <div className="errorMessage">{errors.password}</div>
-            )}
-          </div>
+          )}
           
-          <div className="formGroup">
-            <label htmlFor="confirmPassword" className="label">Подтвердите пароль</label>
-            <input
-              id="confirmPassword"
-              name="confirmPassword"
-              type="password"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              className={`inputField ${errors.confirmPassword ? "error" : ""}`}
-              placeholder="Повторите пароль"
-            />
-            {errors.confirmPassword && (
-              <div className="errorMessage">{errors.confirmPassword}</div>
-            )}
-          </div>
-          
-          <div className="termsCheckbox">
-            <input 
-              type="checkbox" 
-              id="terms" 
-              checked={termsAccepted}
-              onChange={(e) => setTermsAccepted(e.target.checked)}
-            />
-            <label htmlFor="terms" className="termsText">
-              Я согласен с <a href="#" className="link">условиями использования</a> и 
-              <a href="#" className="link"> политикой конфиденциальности</a>
-            </label>
-          </div>
-          
-          <button 
-            type="submit" 
-            className="submitButton"
-            disabled={isLoading}
-          >
-            {isLoading ? "Регистрация..." : "Зарегистрироваться"}
-          </button>
-        </form>
-        
-        <div className="divider">
-          <span className="dividerText">или</span>
-        </div>
-        
-        <div className="oauthSection">
-          <p className="oauthTitle">Войти через социальные сети</p>
-          <div className="oauthButtons">
+          <form onSubmit={handleSubmit}>
+            <div className="auth-form-group">
+              <label htmlFor="name" className="auth-label">Имя</label>
+              <input
+                id="name"
+                name="name"
+                type="text"
+                value={formData.name}
+                onChange={handleChange}
+                className={`auth-input ${errors.name ? "error" : ""}`}
+                placeholder="Введите ваше имя"
+              />
+              {errors.name && (
+                <div className="auth-error">{errors.name}</div>
+              )}
+            </div>
+            
+            <div className="auth-form-group">
+              <label htmlFor="email" className="auth-label">Email</label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleChange}
+                className={`auth-input ${errors.email ? "error" : ""}`}
+                placeholder="Введите ваш email"
+              />
+              {errors.email && (
+                <div className="auth-error">{errors.email}</div>
+              )}
+            </div>
+            
+            <div className="auth-form-group">
+              <label htmlFor="password" className="auth-label">Пароль</label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                value={formData.password}
+                onChange={handleChange}
+                className={`auth-input ${errors.password ? "error" : ""}`}
+                placeholder="Введите пароль"
+              />
+              <div className="password-strength">
+                <div 
+                  className="strength-meter" 
+                  style={{
+                    width: `${passwordStrength}%`,
+                    backgroundColor: getPasswordStrengthColor(),
+                    height: '4px',
+                    borderRadius: '2px',
+                    transition: 'all 0.3s ease'
+                  }}
+                ></div>
+              </div>
+              {errors.password && (
+                <div className="auth-error">{errors.password}</div>
+              )}
+            </div>
+            
+            <div className="auth-form-group">
+              <label htmlFor="confirmPassword" className="auth-label">Подтвердите пароль</label>
+              <input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                className={`auth-input ${errors.confirmPassword ? "error" : ""}`}
+                placeholder="Повторите пароль"
+              />
+              {errors.confirmPassword && (
+                <div className="auth-error">{errors.confirmPassword}</div>
+              )}
+            </div>
+            
+            <div className="auth-form-group">
+              <label className="auth-label">
+                <input 
+                  type="checkbox" 
+                  checked={termsAccepted}
+                  onChange={(e) => setTermsAccepted(e.target.checked)}
+                  style={{ marginRight: '0.5rem' }}
+                />
+                Я согласен с <a href="#" className="auth-link">условиями использования</a> и 
+                <a href="#" className="auth-link"> политикой конфиденциальности</a>
+              </label>
+            </div>
+            
             <button 
-              className="oauthButton"
-              onClick={() => handleOAuthSignIn("google")}
+              type="submit" 
+              className="auth-button"
+              disabled={isLoading}
             >
-              Google
+              {isLoading ? "Регистрация..." : "Зарегистрироваться"}
             </button>
-            <button 
-              className="oauthButton"
-              onClick={() => handleOAuthSignIn("github")}
-            >
-              GitHub
-            </button>
+          </form>
+          
+          <div className="auth-divider">
+            <span className="auth-divider-text">или</span>
           </div>
-        </div>
-        
-        <div className="loginLink">
-          <p className="loginText">
-            Уже есть аккаунт?{" "}
-            <Link href="/auth/signin" className="link">
-              Войти
-            </Link>
-          </p>
+          
+          <div className="auth-oauth-section">
+            <p className="auth-oauth-title">Войти через социальные сети</p>
+            <div className="auth-oauth-buttons">
+              <button 
+                className="auth-oauth-button"
+                onClick={() => handleOAuthSignIn("google")}
+              >
+                Google
+              </button>
+              <button 
+                className="auth-oauth-button"
+                onClick={() => handleOAuthSignIn("github")}
+              >
+                GitHub
+              </button>
+            </div>
+          </div>
+          
+          <div className="auth-form-group" style={{ textAlign: 'center', marginTop: '1.5rem' }}>
+            <p className="auth-message">
+              Уже есть аккаунт?{" "}
+              <Link href="/auth/signin" className="auth-link">
+                Войти
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>
