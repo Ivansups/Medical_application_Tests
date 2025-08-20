@@ -4,13 +4,13 @@ from fastapi import HTTPException, status
 from app.db.models.test import Test
 from app.db.models.questions import Question
 from app.schemas.test import TestCreate
+from app.exceptions import NotFoundException
 import logging
 
 logger = logging.getLogger(__name__)
 
 def create_test_with_questions(db: Session, payload: TestCreate) -> Test:
     try:
-        # Создание теста
         test = Test(
             title=payload.title,
             description=payload.description,
@@ -18,7 +18,6 @@ def create_test_with_questions(db: Session, payload: TestCreate) -> Test:
         )
         db.add(test)
         db.flush()
-        # Создание вопросов
         questions = []
         for q in payload.questions:
             question = Question(
@@ -48,7 +47,6 @@ def create_test_with_questions(db: Session, payload: TestCreate) -> Test:
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Внутренняя ошибка сервера"
         )
-    # Поиск тестов по названию
 def find_test_by_title(db: Session, title_o: str, limit: int = 20):
     return(
         db.query(Test)
@@ -72,3 +70,9 @@ def get_tests_with_pagination(db: Session, skip: int = 0, limit: int = 10):
         "skip": skip,
         "limit": limit
     }
+
+def get_test_by_id(self, db: Session, test_id: str) -> Test:
+    test = self.test_repo.get(db, test_id)
+    if not test:
+        raise NotFoundException(f"Тест с ID {test_id} не найден")
+    return test

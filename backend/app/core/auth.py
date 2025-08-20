@@ -12,20 +12,16 @@ from app.db.session import get_db
 from app.db.models.user import User
 from app.schemas.auth import TokenData
 
-# Конфигурация из переменных окружения
 SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-change-this-in-production")
 ALGORITHM = os.getenv("ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
 
-# Схема OAuth2 для пароля
 oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl="/api/v1/auth/token", 
     scheme_name="JWT"
 )
-# Контекст для хеширования паролей
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# Pydantic модели для валидации
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     """Создает JWT токен доступа"""
@@ -38,15 +34,12 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Проверяет пароль"""
     return pwd_context.verify(plain_password, hashed_password)
 
 def get_password_hash(password: str) -> str:
-    """Хеширует пароль"""
     return pwd_context.hash(password)
 
 def authenticate_user(db: Session, email: str, password: str) -> Union[User, bool]:
-    """Аутентифицирует пользователя"""
     user = db.query(User).filter(User.email == email).first()
     if not user:
         return False
@@ -54,8 +47,7 @@ def authenticate_user(db: Session, email: str, password: str) -> Union[User, boo
         return False
     return user
 
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:
-    """Получает текущего пользователя из токена"""
+def get_current_user_from_token(token: str, db: Session) -> User:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -75,15 +67,15 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         raise credentials_exception
     return user
 
+def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:
+    return get_current_user_from_token(token, db)
+
 def get_current_active_user(current_user: User = Depends(get_current_user)) -> User:
-    """Получает активного пользователя"""
     if not current_user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
 
 def create_user(db: Session, email: str, password: str) -> User:
-    """Создает нового пользователя"""
-    # Проверяем, существует ли пользователь с таким email
     existing_user = db.query(User).filter(User.email == email).first()
     if existing_user:
         raise HTTPException(
@@ -91,12 +83,12 @@ def create_user(db: Session, email: str, password: str) -> User:
             detail="Email already registered"
         )
     
-    # Создаем нового пользователя
     hashed_password = get_password_hash(password)
     db_user = User(
         email=email,
         hashed_password=hashed_password,
-        is_active=True
+        is_active=True,
+        is_admin=False
     )
     db.add(db_user)
     db.commit()

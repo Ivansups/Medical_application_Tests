@@ -3,6 +3,8 @@ import os
 
 class Settings(BaseSettings):
     DATABASE_URL: str | None = None
+
+    RATE_LIMIT_PER_MINUTE: int = 60
     
     POSTGRES_USER: str = 'postgres'
     POSTGRES_PASSWORD: str = '3891123'
