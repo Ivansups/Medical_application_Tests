@@ -196,6 +196,7 @@
 /* Группы форм */
 .auth-form-group {
   margin-bottom: 1rem;
+  color: #000000 !important
 }
 
 /* Сообщения */
