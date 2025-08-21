@@ -3,7 +3,7 @@
 import { signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import styles from "./signout-page.module.css";
+import "../auth-common.css";
 
 export default function SignOutPage() {
   const router = useRouter();
@@ -48,36 +48,39 @@ export default function SignOutPage() {
   };
 
   return (
-    <div className={styles.container}>
-      <div className={styles.logoutWindow}>
-        <div className={styles.content}>
-          <h1 className={styles.title}>Выход из системы</h1>
+    <div className="auth-container">
+      <div className="auth-window">
+        <div className="auth-content">
+          <h1 className="auth-title">Выход из системы</h1>
           
-          <div className={styles.messageContainer}>
-            <p className={styles.message}>Вы уверены, что хотите выйти?</p>
-            
-            {error && (
-              <div className={styles.errorMessage}>
-                {error}
-              </div>
-            )}
-            
-            <div className={styles.buttonContainer}>
-              <button 
-                onClick={handleSignOut}
-                disabled={isLoading}
-                className={`${styles.button} ${styles.buttonLogout}`}
-              >
-                {isLoading ? 'Выход...' : 'Да, выйти'}
-              </button>
-              <button 
-                onClick={handleCancel}
-                disabled={isLoading}
-                className={`${styles.button} ${styles.buttonCancel}`}
-              >
-                Отмена
-              </button>
+          <div className="auth-message">
+            Вы уверены, что хотите выйти?
+          </div>
+          
+          {error && (
+            <div className="auth-error-message">
+              {error}
             </div>
+          )}
+          
+          <div className="auth-form-group">
+            <button 
+              onClick={handleSignOut}
+              disabled={isLoading}
+              className="auth-button"
+            >
+              {isLoading ? 'Выход...' : 'Да, выйти'}
+            </button>
+          </div>
+          
+          <div className="auth-form-group">
+            <button 
+              onClick={handleCancel}
+              disabled={isLoading}
+              className="auth-button secondary"
+            >
+              Отмена
+            </button>
           </div>
         </div>
       </div>
