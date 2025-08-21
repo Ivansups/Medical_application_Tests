@@ -10,7 +10,6 @@ from fastapi.openapi.docs import get_swagger_ui_html
 from app.middleware.rate_limit import RateLimitMiddleware
 from app.middleware.auth import AuthMiddleware
 from app.exceptions import NotFoundException, ValidationException, UnauthorizedException, ForbiddenException
-#][ui
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -19,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="Medical Tests API", 
-    version="1.0.0",
+    version="1.1.0",
     description="API для медицинских тестов"
 )
 
