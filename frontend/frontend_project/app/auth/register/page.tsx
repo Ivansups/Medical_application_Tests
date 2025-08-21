@@ -133,7 +133,6 @@ export default function RegisterPage() {
         password: formData.password
       });
 
-      // ✅ Без .data — потому что apiClient возвращает данные напрямую
       if (loginResponse.access_token) {
         setCookie('access_token', loginResponse.access_token, 7);
       }
