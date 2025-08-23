@@ -13,8 +13,7 @@ class UserResponse(BaseModel):
     name: Optional[str] = None
     is_active: bool
     is_admin: bool
-    created: datetime
-
+    created_at: datetime
     class Config:
         from_attributes = True
 

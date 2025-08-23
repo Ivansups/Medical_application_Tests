@@ -1,15 +1,14 @@
 'use client';
 import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import apiClient from "@/api/auth/client";
+import apiClient from "@/app/api/auth/client";
 import { setCookie } from "@/lib/cookies";
 import Link from "next/link";
 import "../auth-common.css";
 
 interface LoginResponse {
   access_token: string;
-  id: string;
-  is_admin: boolean;
+  token_type: string;
 }
 
 export default function RegisterPage() {
@@ -129,14 +128,26 @@ export default function RegisterPage() {
         password: formData.password
       });
 
-      const loginResponse = await apiClient.post<LoginResponse>('/auth/token', {
+    const loginResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/token`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
         username: formData.email,
-        password: formData.password
-      });
+        password: formData.password,
+        grant_type: "password",
+        scope: ""
+      }).toString()
+    });
 
-      if (loginResponse.access_token) {
-        setCookie('access_token', loginResponse.access_token, 7);
+      if (!loginResponse.ok) {
+        throw new Error("Failed to login");
       }
+
+      const loginData: LoginResponse = await loginResponse.json();
+
+      setCookie('access_token', loginData.access_token, 7);
 
       router.push("/dashboard");
     } catch (error: any) {
