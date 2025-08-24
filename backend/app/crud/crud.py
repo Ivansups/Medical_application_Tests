@@ -2,16 +2,13 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 import logging
+from uuid import UUID
 from app.db.models.questions import Question
 from app.db.models.test import Test
 from app.schemas.test import TestCreate
 
 # Настройка логирования
 logger = logging.getLogger(__name__)
-
-from fastapi import HTTPException, status
-from sqlalchemy.exc import SQLAlchemyError
-from uuid import UUID
 
 def delete_test_by_id(db: Session, test_id: UUID):
     try:

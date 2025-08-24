@@ -15,6 +15,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         public_endpoints = [
             "/health", 
+            "/health/db",
             "/api/v1/auth/login", 
             "/api/v1/auth/register", 
             "/docs", 

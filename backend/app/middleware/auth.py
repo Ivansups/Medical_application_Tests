@@ -15,7 +15,8 @@ class AuthMiddleware(BaseHTTPMiddleware):
             "/docs", 
             "/openapi.json",
             "/redoc",
-            "/health"
+            "/health",
+            "/health/db"
         ]
         
         if request.url.path in public_endpoints:
