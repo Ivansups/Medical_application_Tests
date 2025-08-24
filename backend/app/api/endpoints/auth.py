@@ -4,7 +4,8 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from app.exceptions import UnauthorizedException, ValidationException
 from app.schemas.auth import LoginData, Token, UserCreate, UserResponse
-from app.core.auth import ACCESS_TOKEN_EXPIRE_MINUTES, authenticate_user, create_access_token, create_user, get_current_active_user
+from app.core.auth import authenticate_user, create_access_token, create_user, get_current_active_user
+from app.core.config import settings
 from ...db.session import get_db
 from ...db.models.user import User
 from fastapi import Form
@@ -20,7 +21,7 @@ def _authenticate_user(db: Session, email: str, password: str) -> Token:
     if not user.is_active:
         raise UnauthorizedException("Пользователь деактивирован")
     
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={"sub": user.email}, expires_delta=access_token_expires
     )

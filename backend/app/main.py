@@ -1,15 +1,15 @@
-from fastapi import FastAPI, Depends, Request
+from fastapi import FastAPI, Depends, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.openapi.docs import get_swagger_ui_html
 from sqlalchemy.orm import Session
 from app.db import get_db
 from app.api.endpoints import tests_questions, auth, search
-import logging
-from fastapi import FastAPI
-from fastapi.openapi.docs import get_swagger_ui_html
 from app.middleware.rate_limit import RateLimitMiddleware
 from app.middleware.auth import AuthMiddleware
 from app.exceptions import NotFoundException, ValidationException, UnauthorizedException, ForbiddenException
+from app.core.config import settings
+import logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -73,13 +73,13 @@ async def custom_swagger_ui_html():
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=settings.ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-app.add_middleware(RateLimitMiddleware, requests_per_minute=60)
+app.add_middleware(RateLimitMiddleware, requests_per_minute=settings.RATE_LIMIT_PER_MINUTE)
 app.add_middleware(AuthMiddleware)
 
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["authentication"])
@@ -93,3 +93,13 @@ def read_root(db: Session = Depends(get_db)):
 @app.get("/health")
 def health_check():
     return {"status": "healthy", "message": "API is running"}
+
+@app.get("/health/db")
+def health_check_db(db: Session = Depends(get_db)):
+    try:
+        # Простая проверка подключения к БД
+        db.execute("SELECT 1")
+        return {"status": "healthy", "database": "connected"}
+    except Exception as e:
+        logger.error(f"Database health check failed: {str(e)}")
+        raise HTTPException(status_code=503, detail="Database connection failed")

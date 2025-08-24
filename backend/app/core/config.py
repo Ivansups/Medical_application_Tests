@@ -11,6 +11,17 @@ class Settings(BaseSettings):
     POSTGRES_DB: str = 'medical_application'
     POSTGRES_HOST: str = 'localhost'
     POSTGRES_PORT: int = 5432
+    
+    # JWT settings
+    SECRET_KEY: str = "your-secret-key-change-this-in-production"
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    
+    # CORS settings
+    ALLOWED_ORIGINS: list[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
+    
+    class Config:
+        env_file = ".env"
 
     @property
     def postgres_url(self) -> str:
