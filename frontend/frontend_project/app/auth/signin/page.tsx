@@ -1,8 +1,8 @@
 'use client';
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
+import { useState } from "react"; // Добавлен импорт useState
 import "../auth-common.css";
 
 export default function SignInPage() {
@@ -10,7 +10,7 @@ export default function SignInPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // Инициализирован значением false
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,10 +23,10 @@ export default function SignInPage() {
       redirect: false
     });
 
-    if (result?.error) {
-      setError("Неверные данные для входа");
-    } else {
+    if (result?.ok) {
       router.push("/dashboard");
+    } else {
+      setError("Неверные данные для входа");
     }
     setIsLoading(false);
   };
@@ -66,13 +66,19 @@ export default function SignInPage() {
               />
             </div>
             
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="auth-button"
-            >
-              {isLoading ? "Вход..." : "Войти"}
-            </button>
+            {/* ✅ Спиннер во время загрузки */}
+            {isLoading ? (
+              <div className="auth-spinner">
+                <div className="spinner"></div>
+              </div>
+            ) : (
+              <button
+                type="submit"
+                className="auth-button"
+              >
+                Войти
+              </button>
+            )}
           </form>
 
           <div className="auth-form-group" style={{ textAlign: 'center', marginTop: '1.5rem' }}>

@@ -20,8 +20,27 @@ oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl="/api/v1/auth/token", 
     scheme_name="JWT"
 )
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__rounds=12)
 
+def authenticate_user(db: Session, email: str, password: str) -> Union[User, bool]:
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        print(f"User with email {email} not found")
+        return False
+    
+    print(f"Checking password for user {email}")
+    print(f"Input password: {password}")
+    print(f"Stored hash: {user.hashed_password}")
+    
+    is_valid = verify_password(password, user.hashed_password)
+    print(f"Password valid: {is_valid}")
+    
+    if not is_valid:
+        print(f"Password verification failed for user {email}")
+        return False
+    
+    print(f"User {email} authenticated successfully")
+    return user
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     """Создает JWT токен доступа"""
@@ -38,14 +57,6 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
-
-def authenticate_user(db: Session, email: str, password: str) -> Union[User, bool]:
-    user = db.query(User).filter(User.email == email).first()
-    if not user:
-        return False
-    if not verify_password(password, user.hashed_password):
-        return False
-    return user
 
 def get_current_user_from_token(token: str, db: Session) -> User:
     credentials_exception = HTTPException(
@@ -75,7 +86,7 @@ def get_current_active_user(current_user: User = Depends(get_current_user)) -> U
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
 
-def create_user(db: Session, email: str, password: str) -> User:
+def create_user(db: Session, email: str, password: str, name: Optional[str] = None) -> User:
     existing_user = db.query(User).filter(User.email == email).first()
     if existing_user:
         raise HTTPException(
@@ -87,6 +98,7 @@ def create_user(db: Session, email: str, password: str) -> User:
     db_user = User(
         email=email,
         hashed_password=hashed_password,
+        name=name,
         is_active=True,
         is_admin=False
     )

@@ -52,7 +52,7 @@ def find_test_by_title(db: Session, title_o: str, limit: int = 20):
         db.query(Test)
         .filter(Test.title.ilike(f"%{title_o}%"))
         .order_by(Test.created_at.desc())
-        .limit()
+        .limit(limit)
         .all()
     )
 def get_tests_with_pagination(db: Session, skip: int = 0, limit: int = 10):
@@ -71,8 +71,8 @@ def get_tests_with_pagination(db: Session, skip: int = 0, limit: int = 10):
         "limit": limit
     }
 
-def get_test_by_id(self, db: Session, test_id: str) -> Test:
-    test = self.test_repo.get(db, test_id)
+def get_test_by_id(db: Session, test_id: str) -> Test:
+    test = db.query(Test).filter(Test.id == test_id).first()
     if not test:
         raise NotFoundException(f"Тест с ID {test_id} не найден")
     return test

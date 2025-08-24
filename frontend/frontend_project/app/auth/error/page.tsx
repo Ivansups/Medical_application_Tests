@@ -1,62 +1,4 @@
-// // Страница ошибок аутентификации
-// // NextAuth автоматически перенаправляет сюда при ошибках входа
-
-// // Импорты, которые понадобятся:
-// // import { useSearchParams } from "next/navigation"
-
-// 'use client'
-
-// import { useSearchParams } from 'next/navigation'
-
-// import { useState } from 'react'
-// import { useRouter } from 'next/navigation'
-// import { signIn } from 'next-auth/react'
-
-
-// export default function ErrorPage() {
-//   // Здесь нужно:
-//   // 1. Получить параметр error из URL (useSearchParams)
-//   // 2. Показать соответствующее сообщение об ошибке
-//   // 3. Предоставить ссылку для возврата к странице входа
-//   // 4. Возможно, логирование ошибки
-
-//   const searchParams = useSearchParams()
-//   const error = searchParams.get('error')
-
-//   if (error) {
-  
-//   return (
-//     <div>
-//       {/* 
-//         Здесь должна быть страница ошибок:
-        
-//         1. Получение параметра error из URL
-//         2. Отображение понятного сообщения об ошибке
-//         3. Кнопка "Попробовать снова" (ссылка на /auth/signin)
-//         4. Кнопка "Вернуться на главную" (ссылка на /)
-//         5. Возможно, форма обратной связи
-//       */}
-      
-//       <h1>Ошибка аутентификации</h1>
-      
-//       {/* Пример структуры:
-//       const searchParams = useSearchParams()
-//       const error = searchParams.get('error')
-      
-//       <div>
-//         <h2>Что-то пошло не так</h2>
-//         <p>Ошибка: {error}</p>
-//         <a href="/auth/signin">Попробовать снова</a>
-//         <a href="/">Вернуться на главную</a>
-//       </div>
-//       */}
-//     </div>
-//   )
-// }
-// }
-
 'use client'
-
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import "../auth-common.css"
@@ -64,6 +6,7 @@ import "../auth-common.css"
 export default function AuthErrorPage() {
   const searchParams = useSearchParams()
   const error = searchParams.get('error')
+  const errorDescription = searchParams.get('error_description')
 
   const getErrorMessage = (error: string | null) => {
     switch (error) {
@@ -90,7 +33,7 @@ export default function AuthErrorPage() {
       case 'WeakPassword':
         return 'Пароль слишком слабый'
       default:
-        return 'Произошла неизвестная ошибка'
+        return error || 'Произошла неизвестная ошибка'
     }
   }
 
@@ -105,8 +48,22 @@ export default function AuthErrorPage() {
           </div>
           
           <div className="auth-error-message">
-            Ошибка: {getErrorMessage(error)}
+            <strong>Ошибка:</strong> {getErrorMessage(error)}
           </div>
+
+          {/* ✅ Показываем описание ошибки для разработки */}
+          {errorDescription && (
+            <div className="auth-error-description">
+              <strong>Описание:</strong> {errorDescription}
+            </div>
+          )}
+
+          {/* ✅ Показываем код ошибки для разработки */}
+          {error && (
+            <div className="auth-error-code">
+              <strong>Код ошибки:</strong> {error}
+            </div>
+          )}
           
           <div className="auth-form-group">
             <Link href="/auth/signin">
