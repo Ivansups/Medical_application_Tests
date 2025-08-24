@@ -81,7 +81,6 @@ app.add_middleware(
 
 app.add_middleware(RateLimitMiddleware, requests_per_minute=60)
 app.add_middleware(AuthMiddleware)
-app.add_middleware(RateLimitMiddleware)
 
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["authentication"])
 app.include_router(tests_questions.router, prefix="/api/v1", tags=["tests"])

@@ -42,11 +42,9 @@ services:
         condition: service_healthy
     volumes:
       - ./backend:/app
-      - ./alembic:/app/alembic
-      - ./alembic.ini:/app/alembic.ini
     command: >
       sh -c "
-        alembic upgrade head &&
+        cd /app && alembic upgrade head &&
         uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
       "
     networks:

@@ -15,7 +15,6 @@ export const authOptions: NextAuthOptions = {
         try {
           const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://api:8000";
           
-          // Используем эндпоинт /api/v1/auth/login вместо /auth/token
           const loginResponse = await fetch(`${apiBaseUrl}/api/v1/auth/login`, {
             method: "POST",
             headers: { 
@@ -34,7 +33,6 @@ export const authOptions: NextAuthOptions = {
 
           const loginData = await loginResponse.json();
           
-          // Получаем информацию о пользователе с помощью токена
           const userResponse = await fetch(`${apiBaseUrl}/api/v1/auth/me`, {
             headers: {
               "Authorization": `Bearer ${loginData.access_token}`
