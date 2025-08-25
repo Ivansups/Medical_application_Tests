@@ -1,12 +1,218 @@
 ## Фронтенд разработчику: руководство и учебник
 
-Next.js (App Router) + NextAuth + Prisma. Этот файл — не просто инструкции, а учебник с примерами и практикой интеграции с нашим FastAPI бэкендом.
+Next.js (App Router) + NextAuth + TypeScript. Этот файл — практический гайд по текущему фронтенду и чек-лист задач согласно roadmap.
 
-### Технологии
-- Next.js 14 (app/ directory)
-- TypeScript
-- NextAuth (JWT strategy)
-- Prisma (для пользовательских данных фронта)
+### 🚨 Текущее состояние проекта
+
+#### ✅ Что уже реализовано:
+- Базовая структура Next.js 14 с App Router
+- NextAuth конфигурация (базовая)
+- TypeScript настройка
+- Tailwind CSS
+- Docker конфигурация
+- Базовые страницы аутентификации
+
+#### ❌ Критические проблемы (Phase 1):
+- NextAuth не сохраняет JWT токены в сессии
+- Отсутствует единый API клиент
+- Нет основных страниц (дашборд, прохождение тестов)
+- Проблемы с защищенными маршрутами
+- Отсутствует обработка ошибок API
+
+### 🎯 Приоритетные задачи (Phase 1)
+
+#### 1. Исправить NextAuth конфигурацию
+
+```typescript
+// frontend/frontend_project/app/auth.ts - ОБНОВИТЬ
+import NextAuth from "next-auth"
+import Credentials from "next-auth/providers/credentials"
+import { authConfig } from "./auth.config"
+
+export const { auth, signIn, signOut, handlers } = NextAuth({
+  ...authConfig,
+  
+  providers: [
+    Credentials({
+      name: "credentials",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" }
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) return null
+        
+        try {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              email: credentials.email, 
+              password: credentials.password 
+            }),
+          })
+          
+          if (!res.ok) return null
+          
+          const data = await res.json()
+          return { 
+            id: credentials.email, 
+            email: credentials.email, 
+            accessToken: data.access_token,
+            role: data.user?.role || 'student'
+          }
+        } catch (error) {
+          console.error('Auth error:', error)
+          return null
+        }
+      }
+    }),
+  ],
+  
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user && 'accessToken' in user) {
+        token.accessToken = (user as any).accessToken
+        token.role = (user as any).role
+      }
+      return token
+    },
+    async session({ session, token }) {
+      (session as any).accessToken = (token as any).accessToken
+      (session as any).role = (token as any).role
+      return session
+    },
+  },
+  
+  session: { strategy: "jwt" },
+  debug: process.env.NODE_ENV === "development",
+})
+```
+
+#### 2. Создать единый API клиент
+
+```typescript
+// frontend/frontend_project/lib/apiClient.ts - СОЗДАТЬ
+import { Test, CreateTest, TestAttempt, UserAnswer } from '@/types/test'
+
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
+export const API_V1 = `${API_BASE_URL}/api/v1`
+
+class ApiError extends Error {
+  constructor(public status: number, message: string) {
+    super(message)
+    this.name = 'ApiError'
+  }
+}
+
+async function apiRequest<T = unknown>(
+  endpoint: string, 
+  options: RequestInit = {}
+): Promise<T> {
+  const url = `${API_V1}${endpoint}`
+  
+  const config: RequestInit = {
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+    ...options,
+  }
+
+  try {
+    const response = await fetch(url, config)
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      throw new ApiError(
+        response.status, 
+        errorData.detail || `HTTP ${response.status}`
+      )
+    }
+    
+    return await response.json()
+  } catch (error) {
+    if (error instanceof ApiError) {
+      throw error
+    }
+    throw new ApiError(500, 'Network error')
+  }
+}
+
+// Функции для работы с тестами
+export const testApi = {
+  getAll: (skip = 0, limit = 10) => 
+    apiRequest<Test[]>(`/tests?skip=${skip}&limit=${limit}`),
+  
+  getById: (id: string) => 
+    apiRequest<Test>(`/tests/${id}`),
+  
+  create: (data: CreateTest) => 
+    apiRequest<Test>('/tests', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    }),
+  
+  update: (id: string, data: CreateTest) => 
+    apiRequest<Test>(`/tests/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    }),
+  
+  delete: (id: string) => 
+    apiRequest(`/tests/${id}`, { method: 'DELETE' }),
+  
+  search: (query: string) => 
+    apiRequest<Test[]>(`/tests/search?q=${encodeURIComponent(query)}`)
+}
+
+// Функции для работы с попытками тестов
+export const attemptApi = {
+  start: (testId: string, token: string) => 
+    apiRequest<TestAttempt>(`/tests/${testId}/start`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` }
+    }),
+  
+  submitAnswer: (attemptId: string, questionId: string, answer: any, token: string) => 
+    apiRequest(`/attempts/${attemptId}/submit-answer`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ question_id: questionId, answer_data: answer })
+    }),
+  
+  finish: (attemptId: string, token: string) => 
+    apiRequest(`/attempts/${attemptId}/finish`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` }
+    }),
+  
+  getMyAttempts: (token: string) => 
+    apiRequest<TestAttempt[]>('/attempts/my', {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+}
+
+// Функции для аутентификации
+export const authApi = {
+  login: (email: string, password: string) => 
+    apiRequest('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password })
+    }),
+  
+  register: (name: string, email: string, password: string) => 
+    apiRequest('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify({ name, email, password })
+    }),
+  
+  getProfile: (token: string) => 
+    apiRequest('/auth/me', {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+}
+```
 
 ## 🏗️ Архитектура Frontend приложений
 
@@ -1079,6 +1285,70 @@ export default function RegisterForm() {
 - `types/` — общие типы, лучше генерировать от OpenAPI
 
 Учись, двигаясь мелкими PR: сначала аутентификация, затем CRUD тестов на страницах, далее полировка UX.
+
+### 📋 Чек-лист Phase 1
+
+- [ ] Исправить NextAuth конфигурацию
+- [ ] Создать единый API клиент
+- [ ] Обновить дашборд
+- [ ] Создать страницу прохождения теста
+- [ ] Обновить middleware
+- [ ] Добавить компонент навигации
+- [ ] Протестировать аутентификацию
+- [ ] Проверить интеграцию с бэкендом
+
+### 📋 Чек-лист Phase 2
+
+- [ ] Создать административную панель
+- [ ] Добавить страницу создания тестов
+- [ ] Реализовать страницу результатов
+- [ ] Добавить аналитику и графики
+- [ ] Создать компонент таймера
+- [ ] Добавить drag & drop для вопросов
+
+### 📋 Чек-лист Phase 3
+
+- [ ] Добавить адаптивный дизайн
+- [ ] Реализовать темную тему
+- [ ] Добавить анимации
+- [ ] Оптимизировать производительность
+- [ ] Написать тесты
+- [ ] Добавить PWA функциональность
+
+### 🚀 Быстрый старт
+
+1. **Установи зависимости:**
+```bash
+cd frontend/frontend_project
+npm install
+```
+
+2. **Настрой переменные окружения:**
+```bash
+cp .env.example .env.local
+# Отредактируй .env.local под свои настройки
+```
+
+3. **Запусти сервер разработки:**
+```bash
+npm run dev
+```
+
+4. **Проверь приложение:**
+- Открой `http://localhost:3000`
+- Протестируй регистрацию и вход
+- Проверь дашборд
+
+### 🔗 Полезные ссылки
+
+- [Next.js документация](https://nextjs.org/docs)
+- [NextAuth документация](https://next-auth.js.org/)
+- [Tailwind CSS документация](https://tailwindcss.com/docs)
+- [TypeScript документация](https://www.typescriptlang.org/docs/)
+
+---
+
+**Примечание**: Этот документ обновляется в соответствии с roadmap. Все изменения должны быть протестированы перед внедрением в production.
 
 ## Полный код для завершения проекта
 
