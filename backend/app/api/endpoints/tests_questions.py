@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-@router.delete("/tests/{test_id}", response_model=dict)
+@router.delete("/tests/{test_id}", response_model=dict, description="Delete a test by ID")
 def delete_test_endpoint(test_id: UUID, db: Session = Depends(get_db)):
     try:
         return delete_test_by_id(db, test_id)
@@ -24,7 +24,7 @@ def delete_test_endpoint(test_id: UUID, db: Session = Depends(get_db)):
         logger.error(f"Error deleting test: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
-@router.delete("/tests/", response_model=dict)
+@router.delete("/tests/", response_model=dict, description="Delete all tests")
 def delete_all_tests_endpoint(db: Session = Depends(get_db)):
     try:
         return delete_all_tests(db)
@@ -34,7 +34,7 @@ def delete_all_tests_endpoint(db: Session = Depends(get_db)):
         logger.error(f"Error deleting all tests: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
-@router.get("/tests", response_model=List[TestCreate])
+@router.get("/tests", response_model=List[TestCreate], description="Get all tests")
 def get_all_tests_endpoint(db: Session = Depends(get_db), skip: int = 0, limit: int = 10):
     try:
         return get_tests(db, skip=skip, limit=limit)
@@ -42,7 +42,7 @@ def get_all_tests_endpoint(db: Session = Depends(get_db), skip: int = 0, limit: 
         logger.error(f"Error fetching tests: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
-@router.post("/tests", response_model=TestCreate, status_code=201)
+@router.post("/tests", response_model=TestCreate, status_code=201, description="Create a new test")
 def create_new_test_endpoint(test: TestCreate, db: Session = Depends(get_db)):
     logger.info(f"Creating new test: '{test.title}' with {len(test.questions)} questions")
     
@@ -60,7 +60,7 @@ def create_new_test_endpoint(test: TestCreate, db: Session = Depends(get_db)):
         logger.exception(f"Unexpected error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
-@router.get("/tests/{test_id}", response_model=TestCreate)
+@router.get("/tests/{test_id}", response_model=TestCreate, description="Get a test by ID")
 def get_test_by_id_endpoint(test_id: UUID, db: Session = Depends(get_db)):
     try:
         db_test = get_test_by_id(db, test_id=test_id)
@@ -73,7 +73,7 @@ def get_test_by_id_endpoint(test_id: UUID, db: Session = Depends(get_db)):
         logger.error(f"Error fetching test {test_id}: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
-@router.put("/tests/{test_id}", response_model=TestCreate)
+@router.put("/tests/{test_id}", response_model=TestCreate, description="Update a test by ID")
 def update_test_endpoint(test_id: UUID, test: TestCreate, db: Session = Depends(get_db)):
     logger.info(f"Updating test {test_id}: '{test.title}' with {len(test.questions)} questions")
     

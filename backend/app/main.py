@@ -7,6 +7,7 @@ from app.db import get_db
 from app.api.endpoints import tests_questions, auth, search
 from app.middleware.rate_limit import RateLimitMiddleware
 from app.middleware.auth import AuthMiddleware
+from app.middleware.logging import LoggingMiddleware
 from app.exceptions import NotFoundException, ValidationException, UnauthorizedException, ForbiddenException
 from app.core.config import settings
 import logging
@@ -71,16 +72,17 @@ async def custom_swagger_ui_html():
         swagger_css_url="/static/swagger-ui/swagger-ui.css",
     )
 
+# Middleware stack (порядок важен - от последнего к первому)
+app.add_middleware(LoggingMiddleware)  # Логирование всех запросов
+app.add_middleware(AuthMiddleware)     # Аутентификация пользователей
+app.add_middleware(RateLimitMiddleware, requests_per_minute=settings.RATE_LIMIT_PER_MINUTE)  # Ограничение скорости
 app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.ALLOWED_ORIGINS,
+    CORSMiddleware,  # CORS для кросс-доменных запросов
+    allow_origins=settings.allowed_origins_list,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-app.add_middleware(RateLimitMiddleware, requests_per_minute=settings.RATE_LIMIT_PER_MINUTE)
-app.add_middleware(AuthMiddleware)
 
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["authentication"])
 app.include_router(tests_questions.router, prefix="/api/v1", tags=["tests"])
