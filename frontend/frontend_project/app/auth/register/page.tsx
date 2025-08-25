@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import apiClient from "@/app/api/auth/client";
 import { setCookie } from "@/lib/cookies";
@@ -11,7 +11,7 @@ interface LoginResponse {
   token_type: string;
 }
 
-export default function RegisterPage() {
+function RegisterPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [formData, setFormData] = useState({
@@ -122,13 +122,24 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      await apiClient.post('/auth/register', {
-        name: formData.name,
-        email: formData.email,
-        password: formData.password
+      const registerResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password
+        }),
       });
 
-    const loginResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/token`, {
+      if (!registerResponse.ok) {
+        const errorData = await registerResponse.json();
+        throw new Error(errorData.error || 'Registration failed');
+      }
+
+    const loginResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/auth/token`, {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
@@ -295,5 +306,13 @@ export default function RegisterPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div>Загрузка...</div>}>
+      <RegisterPageContent />
+    </Suspense>
   );
 }
