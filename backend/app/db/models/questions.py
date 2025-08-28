@@ -1,10 +1,11 @@
-from sqlalchemy import Column, String, Integer, ForeignKey, Text
+from sqlalchemy import Column, String, ForeignKey, Text
 from sqlalchemy.dialects.postgresql import UUID, JSON
 import uuid
-from .base import Base
 from sqlalchemy.orm import relationship
 
+from sqlalchemy.ext.declarative import declarative_base
 
+Base = declarative_base()
 class Question(Base):
     __tablename__ = 'questions'
     

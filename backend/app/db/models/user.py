@@ -2,9 +2,9 @@ from datetime import datetime
 from sqlalchemy import Boolean, Column, DateTime, String
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
-from .base import Base
+from sqlalchemy.ext.declarative import declarative_base
 
-
+Base = declarative_base()
 class User(Base):
     __tablename__ = 'users'
 
@@ -13,5 +13,5 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
     name = Column(String, nullable=True)
     is_active = Column(Boolean, default=True)
-    is_admin = Column(Boolean, default=False)
+    role = Column(String(20), default='student')  # Тут есть только 3 роли: student, teacher, admin
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
