@@ -270,11 +270,24 @@ body {
 
 /* Улучшенные стили для текста */
 .text-gray-700 {
-    color: #374151;
+    color: #000000 !important;
 }
 
 .text-gray-800 {
-    color: #1f2937;
+    color: #000000 !important;
+}
+
+/* Принудительно черный цвет для всех текстов */
+.text-black {
+    color: #000000 !important;
+}
+
+/* Переопределяем все серые цвета на черный */
+.text-gray-500,
+.text-gray-600,
+.text-gray-700,
+.text-gray-800 {
+    color: #000000 !important;
 }
 
 /* Стили для заголовка */
@@ -331,4 +344,4 @@ button:disabled:hover {
 
 .loading {
     animation: spin 1s linear infinite;
-} 
+}

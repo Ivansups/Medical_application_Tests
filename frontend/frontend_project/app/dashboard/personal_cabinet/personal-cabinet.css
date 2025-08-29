@@ -1,0 +1,95 @@
+/* Принудительные стили для черного текста в Personal Cabinet */
+
+/* Глобальное переопределение всех серых цветов */
+.text-gray-500,
+.text-gray-600,
+.text-gray-700,
+.text-gray-800,
+.text-gray-400,
+.text-gray-300 {
+    color: #000000 !important;
+}
+
+/* Принудительно черный цвет для всех текстов */
+.text-black {
+    color: #000000 !important;
+}
+
+/* Агрессивные стили для всех текстовых элементов */
+h1, h2, h3, h4, h5, h6,
+p, span, div, td, th {
+    color: #000000 !important;
+}
+
+/* Специфичные стили для компонентов */
+.dashboard-card h1,
+.dashboard-card h2,
+.dashboard-card h3,
+.dashboard-card p,
+.dashboard-card span,
+.dashboard-card div {
+    color: #000000 !important;
+}
+
+/* Стили для таблиц */
+.dashboard-table th,
+.dashboard-table td {
+    color: #000000 !important;
+}
+
+/* Стили для кнопок (кроме текста внутри) */
+button {
+    color: inherit !important;
+}
+
+/* Стили для иконок (оставляем их цвета) */
+i {
+    color: inherit !important;
+}
+
+/* Специфичные стили для достижений */
+.achievement-title,
+.achievement-description {
+    color: #000000 !important;
+}
+
+/* Стили для статистики */
+.stat-value,
+.stat-title {
+    color: #000000 !important;
+}
+
+/* Дополнительные стили для всех элементов */
+* {
+    color: #000000 !important;
+}
+
+/* Исключения для кнопок и иконок */
+button, i, .button_primary, .button_secondary {
+    color: inherit !important;
+}
+
+/* Дополнительные стили для всех текстовых элементов */
+.dashboard-card * {
+    color: #000000 !important;
+}
+
+/* Стили для всех заголовков */
+h1, h2, h3, h4, h5, h6 {
+    color: #000000 !important;
+}
+
+/* Стили для всех параграфов */
+p {
+    color: #000000 !important;
+}
+
+/* Стили для всех span элементов */
+span {
+    color: #000000 !important;
+}
+
+/* Стили для всех div элементов */
+div {
+    color: #000000 !important;
+}
