@@ -5,6 +5,7 @@ import logging
 from uuid import UUID
 from app.db.models.questions import Question
 from app.db.models.test import Test
+from app.db.models.test_attempts import TestAttempt
 from app.schemas.test import TestCreate
 
 # Настройка логирования
@@ -92,7 +93,8 @@ def create_test(db: Session, test_data: TestCreate):
         test_obj = Test(
             title=test_data.title,
             description=test_data.description,
-            duration=test_data.duration
+            duration=test_data.duration,
+            is_active=test_data.is_active
         )
         db.add(test_obj)
         db.flush()  # Получаем ID без коммита
@@ -173,6 +175,7 @@ def update_test(db: Session, test_id: UUID, test_data: TestCreate):
         test.title = test_data.title
         test.description = test_data.description
         test.duration = test_data.duration
+        test.is_active = test_data.is_active
         
         # Удаляем старые вопросы
         db.query(Question).filter(Question.test_id == test_id).delete()
@@ -231,3 +234,25 @@ def update_test(db: Session, test_id: UUID, test_data: TestCreate):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Непредвиденная ошибка: {str(e)}"
         )
+def create_test_attempt(db: Session, test_id: UUID, user_id: UUID):
+    """Создание записи о прохождении теста"""
+    try:
+        test_attempt = TestAttempt(
+            test_id=test_id,
+            user_id=user_id
+        )
+        db.add(test_attempt)
+        db.commit()
+        db.refresh(test_attempt)
+        return test_attempt
+    except SQLAlchemyError as e:
+        db.rollback()
+        logger.error(f"SQLAlchemy error during test attempt creation: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Ошибка базы данных: {str(e)}"
+        )
+
+def get_user_attempts(db: Session, user_id: UUID):
+    """Получение всех попыток прохождения тестов для пользователя"""
+    return db.query(TestAttempt).filter(TestAttempt.user_id == user_id).all() 

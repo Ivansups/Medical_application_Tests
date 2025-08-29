@@ -20,6 +20,7 @@ class TestCreate(BaseModel):
     title: str = Field(..., min_length=1, max_length=255, description="Test title")
     description: Optional[str] = Field(None, max_length=500, description="Test description")
     duration: int = Field(..., gt=0, le=480, description="Test duration in minutes (1-480)")
+    is_active: bool = Field(True, description="Test active status")
     questions: List[QuestionCreate] = Field(..., min_items=1, max_items=100, description="List of questions")
     
     @validator('questions')
@@ -27,6 +28,18 @@ class TestCreate(BaseModel):
         if not v:
             raise ValueError('Test must have at least one question')
         return v
+
+class TestResponse(BaseModel):
+    id: UUID
+    title: str
+    description: Optional[str]
+    duration: int
+    is_active: bool
+    created_at: datetime
+    questions: List[QuestionCreate]
+    
+    class Config:
+        from_attributes = True
 
 class QuestionUpdate(BaseModel):
     id: Optional[UUID] = None  # None для новых вопросов
