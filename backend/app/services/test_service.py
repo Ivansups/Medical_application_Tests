@@ -14,7 +14,8 @@ def create_test_with_questions(db: Session, payload: TestCreate) -> Test:
         test = Test(
             title=payload.title,
             description=payload.description,
-            duration=payload.duration
+            duration=payload.duration,
+            is_active=payload.is_active
         )
         db.add(test)
         db.flush()
